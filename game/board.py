@@ -24,7 +24,7 @@ class Board:
     
     def __iter__(self):
         return iter(self.grid)
-    
+
     
     def init_pieces(self, pattern: BoardPattern):
         self.width = pattern.width

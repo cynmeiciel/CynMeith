@@ -9,4 +9,9 @@ class BoardPattern(ABC):
         self.grid = [[]]
         
     def get_pieces(self) -> list[Piece]:
-        pass
+        pieces = []
+        for row in self.grid:
+            for piece in row:
+                if piece is not None:
+                    pieces.append(piece)
+        return pieces
