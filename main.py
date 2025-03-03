@@ -5,4 +5,4 @@ if __name__ == "__main__":
     # print(config.pieces)
     
     game = Game()
-    print(game.board)   
+    print(game.board)

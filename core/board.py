@@ -30,7 +30,7 @@ class Board:
         self.board[key] = value
         
     def __str__(self):
-        return "\n".join(" ".join(str(piece) if piece else "_" for piece in row) for row in self.board)
+        return "\n".join(" ".join(piece.get_symbol(self.config) if piece else "_" for piece in row) for row in self.board)
   
     def __repr__(self):
         return "\n".join(" ".join(repr(piece) if piece else "_" for piece in row) for row in self.board)

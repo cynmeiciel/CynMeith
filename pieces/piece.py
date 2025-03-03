@@ -8,7 +8,7 @@ class Piece(ABC):
         self.position = position
     
     def __str__(self) -> str:
-        return self.get_symbol()
+        return f"{self.get_side_str()} {self.__class__.__name__}"
     
     def __repr__(self) -> str:
         return f"{self.get_side_str()} {self.__class__.__name__} at {self.position}"
