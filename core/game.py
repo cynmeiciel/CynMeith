@@ -11,7 +11,6 @@ class Game:
         # Load the configuration
         self.config = Config(f"config/{config_name}.yaml")
         
-        
         self._init_board()
         self.turn = True
         self.state = "ONGOING" # "ONGOING", "CHECKMATE", "STALEMATE", "CHECK"

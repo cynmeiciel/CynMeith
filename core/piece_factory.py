@@ -8,11 +8,11 @@ class PieceFactory:
     piece_classes = {}
     
     @classmethod
-    def register_piece(cls, piece_name: str, piece_class: Piece) -> None:
+    def register_piece(cls, piece_symbol: str, piece_class: Piece) -> None:
         """
         Register a piece class with the factory.
         """
-        cls.piece_classes[piece_name] = piece_class
+        cls.piece_classes[piece_symbol] = piece_class
 
     @classmethod
     def create_piece(cls, piece_name: str, position: Coord) -> Piece:

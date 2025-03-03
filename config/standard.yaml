@@ -1,27 +1,21 @@
 pieces:
-  - Pawn:
-      symbol_w: ♙
-      symbol_b: ♟
-      class_path: pieces/pawn.py
-  - Rook:
-      symbol_w: ♖
-      symbol_b: ♜
-      class_path: pieces/rook.py
-  - Knight:
-      symbol_w: ♘
-      symbol_b: ♞
-      class_path: pieces/knight.py
-  - Bishop:
-      symbol_w: ♗
-      symbol_b: ♝
-      class_path: pieces/bishop.py
-  - Queen:
-      symbol_w: ♕
-      symbol_b: ♛
-      class_path: pieces/queen.py
-  - King:
-      symbol_w: ♔
-      symbol_b: ♚
-      class_path: pieces/king.py
+  Pawn:
+    symbol: P
+    class_path: pieces/pawn.py
+  Rook:
+    symbol: R
+    class_path: pieces/rook.py
+  Knight:
+    symbol: N
+    class_path: pieces/knight.py
+  Bishop:
+    symbol: B
+    class_path: pieces/bishop.py
+  Queen:
+    symbol: Q
+    class_path: pieces/queen.py
+  King:
+    symbol: K
+    class_path: pieces/king.py
 
 pattern: standard
