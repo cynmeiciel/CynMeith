@@ -1,3 +1,4 @@
+from core.config import Config
 from abc import ABC, abstractmethod
 from utils.coord import Coord
 
@@ -7,13 +8,16 @@ class Piece(ABC):
         self.position = position
     
     def __str__(self) -> str:
-        return f"{self.side} {self.__class__.__name__} at {self.position}"
+        return self.get_symbol()
     
     def __repr__(self) -> str:
-        return self.__str__()    
+        return f"{self.get_side_str()} {self.__class__.__name__} at {self.position}"
     
     def get_side_str(self) -> str:
         return "White" if self.side else "Black"
+    
+    def get_symbol(self, config: Config) -> str:
+        return config.get_piece_symbol(self.__class__.__name__)
     
     def is_white(self) -> bool:
         return self.side

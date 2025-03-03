@@ -1,9 +1,8 @@
-from core.board import Board
-from core.config import Config
 from core.game import Game
-from utils import Coord, BoardPattern, EmptyPattern
-import yaml
 
 if __name__ == "__main__":
+    # config = Config("config/standard.yaml")
+    # print(config.pieces)
+    
     game = Game()
-    print(game.board)  
+    print(game.board)   

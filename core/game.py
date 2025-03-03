@@ -1,11 +1,13 @@
 from core.board import Board
 from core.config import Config
-from utils import Coord, BoardPattern
+from core.piece_factory import PieceFactory
+from core.move_validator import MoveValidator
+from utils import Coord
 from pieces import Piece
 
 class Game:
     """
-    Class representing a game.
+    Class representing a game. 
     """
     def __init__(self, config_name: str = "standard"):
         # Load the configuration
@@ -16,16 +18,13 @@ class Game:
         self.state = "ONGOING" # "ONGOING", "CHECKMATE", "STALEMATE", "CHECK"
         self.game_log = []
     
-    def _register_pieces(self):
-        pass
-    
     def _init_board(self):
         """
         Initialize the board.
         """
         # self.config.
         
-        self.board = Board()    
+        self.board = Board(self.config)    
         
     def get_valid_moves(self, position: Coord) -> list[Coord]:
         """

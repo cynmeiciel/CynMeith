@@ -1,7 +1,6 @@
 import yaml
-from importlib import import_module
-
-from core.piece_factory import PieceFactory
+# from importlib import import_module
+# from core.piece_factory import PieceFactory
 
 class Config:
     """
@@ -12,7 +11,9 @@ class Config:
         with open(config_path, "r") as file:
             _data = yaml.safe_load(file)
             self.pieces = _data["pieces"]
-            self.pattern = _data["pattern"]
+            self.width = _data["width"]
+            self.height = _data["height"]
+            self.fen = _data["fen"]
             
     def __str__(self):
         return f"Config: {self.pieces}, {self.pattern}"
@@ -26,16 +27,12 @@ class Config:
     def get_piece_symbol(self, piece: str):
         return self.pieces[piece]["symbol"]
     
-    def get_pattern(self, pattern: str):
-        return self.pattern
-    
-    
-    def register_pieces(self, factory: PieceFactory):
-        """
-        Register all pieces with the factory.
-        """
-        for piece_name, piece_data in self.pieces.items():
-            module = import_module(piece_data["class_path"])
-            piece_cls = getattr(module, piece_name)
-            factory.register_piece(piece_data["symbol"], piece_cls)
+    # def register_pieces(self, factory: PieceFactory):
+    #     """
+    #     Register all pieces with the factory.
+    #     """
+    #     for piece_name, piece_data in self.pieces.items():
+    #         module = import_module(piece_data["class_path"])
+    #         piece_cls = getattr(module, piece_name)
+    #         factory.register_piece(piece_data["symbol"], piece_cls)
             
