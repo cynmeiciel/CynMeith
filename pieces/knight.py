@@ -6,4 +6,4 @@ class Knight(Piece):
         super().__init__(color, position)
         
     def is_valid_move(self, new_position: Coord) -> bool:
-        return abs(new_position.x - self.position.x) == 2 and abs(new_position.y - self.position.y) == 1 or abs(new_position.x - self.position.x) == 1 and abs(new_position.y - self.position.y) == 2
+        return self.position.is_lshape(new_position)

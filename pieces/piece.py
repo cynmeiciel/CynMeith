@@ -4,8 +4,8 @@ from utils.coord import Coord
 
 class Piece(ABC):
     def __init__(self, side: bool, position: Coord):
-        self.side = side # "True" for white, "False" for black
-        self.position = position
+        self.side: bool = side # "True" for white, "False" for black
+        self.position: Coord = position
     
     def __str__(self) -> str:
         return f"{self.get_side_str()} {self.__class__.__name__}"
@@ -17,7 +17,11 @@ class Piece(ABC):
         return "White" if self.side else "Black"
     
     def get_symbol(self, config: Config) -> str:
-        return config.get_piece_symbol(self.__class__.__name__)
+        symbol = config.get_piece_symbol(self.__class__.__name__)
+        if self.side:
+            return symbol.upper()
+        else:    
+            return symbol.lower()
     
     def is_white(self) -> bool:
         return self.side

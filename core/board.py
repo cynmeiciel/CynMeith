@@ -23,12 +23,6 @@ class Board:
                     position = Coord(r, c)
                     self.board[r][c] = self.factory.create_piece(piece, position)
     
-    def __getitem__(self, key):
-        return self.board[key]
-    
-    def __setitem__(self, key, value):
-        self.board[key] = value
-        
     def __str__(self):
         return "\n".join(" ".join(piece.get_symbol(self.config) if piece else "_" for piece in row) for row in self.board)
   
@@ -38,14 +32,17 @@ class Board:
     def __iter__(self):
         return iter(self.board)
     
-    def at(self, position: Coord | tuple) -> Piece:
+    def at(self, position: Coord) -> Piece:
         """
         Get the piece at a given position.
         """
-        if isinstance(position, Coord):
-            return self.board[position.x][position.y]
-        return self.board[position[0]][position[1]]
+        return self.board[position.x][position.y]
     
+    def set_at(self, position: Coord, piece: Piece):
+        """
+        Set a piece at a given position.
+        """
+        self.board[position.x][position.y] = piece
         
     def move_piece(self, start: Coord, end: Coord):
         piece = self.board[start.x][start.y]

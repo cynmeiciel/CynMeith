@@ -4,7 +4,7 @@ def fen_parser(fen: str) -> list[list[str]]:
     """
     rows = fen.split("/")
     board = []
-    for row in rows:
+    for row in reversed(rows):
         board_row = []
         for char in row:
             if char.isdigit():
@@ -20,7 +20,7 @@ def fen_deparser(board: list[list[str]]) -> str:
     Deparse a 2D list representing the board and return a FEN string.
     """
     rows = []
-    for row in board:
+    for row in reversed(board):
         fen_row = ""
         count = 0
         for char in row:

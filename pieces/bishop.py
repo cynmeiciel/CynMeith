@@ -6,5 +6,4 @@ class Bishop(Piece):
         super().__init__(color, position)
         
     def is_valid_move(self, new_position: Coord) -> bool:
-        return abs(new_position.x - self.position.x) == abs(new_position.y - self.position.y)
-    
+        return self.position.is_diagonal(new_position)
