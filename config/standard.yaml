@@ -1,22 +1,22 @@
 pieces:
   Pawn:
     symbol: P
-    class_path: pieces.pawn
+    class_path: pawn
   Rook:
     symbol: R
-    class_path: pieces.rook
+    class_path: rook
   Knight:
     symbol: N
-    class_path: pieces.knight
+    class_path: knight
   Bishop:
     symbol: B
-    class_path: pieces.bishop
+    class_path: bishop
   Queen:
     symbol: Q
-    class_path: pieces.queen
+    class_path: queen
   King:
     symbol: K
-    class_path: pieces.king
+    class_path: king
 
 width: 8
 height: 8

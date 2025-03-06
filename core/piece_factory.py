@@ -28,7 +28,7 @@ class PieceFactory:
         """
         for piece_name in config.pieces:
             path = config.get_piece_path(piece_name)
-            module = import_module(path)
+            module = import_module(f"pieces.{path}")
             piece_cls = getattr(module, piece_name)
             self.register_piece(config.get_piece_symbol(piece_name), piece_cls)            
 
