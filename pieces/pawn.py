@@ -6,7 +6,7 @@ class Pawn(Piece):
         super().__init__(color, position)
         self.has_moved = False
     
-    def is_valid_move(self, new_position: Coord) -> bool:
+    def is_valid_move(self, new_position: Coord, board) -> bool:
         return self.position.is_forward(new_position, self.side)
     
     def move(self, new_position: Coord):

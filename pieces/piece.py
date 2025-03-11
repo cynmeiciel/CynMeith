@@ -2,10 +2,15 @@ from core.config import Config
 from abc import ABC, abstractmethod
 from utils.coord import Coord
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from core.board import Board
+
 class Piece(ABC):
     def __init__(self, side: bool, position: Coord):
         self.side: bool = side # "True" for white, "False" for black
         self.position: Coord = position
+        self.valid_moves: list[Coord] = []
     
     def __str__(self) -> str:
         return f"{self.get_side_str()} {self.__class__.__name__}"
@@ -27,7 +32,7 @@ class Piece(ABC):
         return self.side
     
     @abstractmethod
-    def is_valid_move(self, new_position: Coord) -> bool:
+    def is_valid_move(self, new_position: Coord, board: "Board") -> bool:
         pass
     
     def get_valid_moves(self) -> list[Coord]:
@@ -38,7 +43,5 @@ class Piece(ABC):
                     valid_moves.append(Coord(x, y))
         return valid_moves
     
-    def move(self, new_position: Coord):
-        self.position = new_position
-        
-
+    def update_valid_moves(self, board: "Board"):
+        self.valid_moves = self.get_valid_moves(board)

@@ -54,3 +54,45 @@ class Board:
         self.board[end.x][end.y] = piece
         piece.position = end
         return piece
+    
+    def update_valid_moves(self, moved_piece: Piece, start: Coord, end: Coord):
+        """
+        Update the valid moves for all pieces.
+        """
+        
+    
+        for row in self.board:
+            for piece in row:
+                if piece is not None and piece.is_white() != moved_piece.is_white():
+                    piece.update_valid_moves(self)
+    
+    ### Helpers
+    
+    def is_empty(self, position: Coord) -> bool:
+        """
+        Check if a position is empty.
+        """
+        return self.board[position.x][position.y] is None
+    
+    def is_empty_line(self, start: Coord, end: Coord) -> bool:
+        """
+        Check if the line (including diagonals) between two positions is empty.
+        """
+        if not (start.is_straight(end) or start.is_diagonal(end)):
+            return False
+        direction = start.direction_unit(end)
+        position = start + direction
+        while position != end:
+            if not self.is_empty(position):
+                return False
+            position += direction
+        return True
+    
+    def is_enemy(self, position: Coord, side: bool) -> bool:
+        """
+        Check if a position contains an enemy piece.
+        """
+        piece = self.board[position.x][position.y]
+        return piece is not None and piece.is_white() != side
+    
+    

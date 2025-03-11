@@ -62,7 +62,7 @@ class Coord:
     
     def is_forward(self, other: Coord, side: bool) -> bool:
         """
-        Check if the position is forward to another position.
+        Check if the position is forward to another position, according to the side.
         """
         return (side and self.y < other.y) or (not side and self.y > other.y)
     
@@ -73,3 +73,12 @@ class Coord:
         return (side and self.y > other.y) or (not side and self.y < other.y)
     
     ###
+    
+    def direction_unit(self, other: Coord) -> Coord:
+        """
+        Get the unit direction vector to another position.
+        """
+        dx = other.x - self.x
+        dy = other.y - self.y
+        return Coord(dx // abs(dx) if dx else 0, dy // abs(dy) if dy else 0)    
+    
