@@ -1,4 +1,5 @@
 import yaml
+from utils import PieceName
 
 class Config:
     """
@@ -16,11 +17,11 @@ class Config:
     def __str__(self):
         return f"Config: {self.pieces}, {self.pattern}"
     
-    def get_piece_property(self, piece: str, prop: str):
+    def get_piece_property(self, piece: PieceName, prop: str):
         return self.pieces[piece][prop]
     
-    def get_piece_path(self, piece: str):
+    def get_piece_path(self, piece: PieceName):
         return self.pieces[piece].get("class_path", piece.lower())
     
-    def get_piece_symbol(self, piece: str):
+    def get_piece_symbol(self, piece: PieceName):
         return self.pieces[piece].get("symbol", piece[0].upper())

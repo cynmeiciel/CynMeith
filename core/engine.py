@@ -1,8 +1,6 @@
 from core.board import Board
 from core.config import Config
-from core.piece_factory import PieceFactory
-from core.move_validator import MoveValidator
-from utils import Coord
+from utils import Coord, Side
 from pieces import Piece
 
 class Engine:
@@ -14,7 +12,7 @@ class Engine:
         self.config = Config(f"config/{config_name}.yaml")
         
         self.board = Board(self.config)    
-        self.turn = True
+        self.turn: Side = Side.FIRST
         self.state = None
             
     def get_valid_moves(self, position: Coord) -> list[Coord]:

@@ -1,7 +1,7 @@
 from importlib import import_module
 from core.config import Config
 from pieces.piece import Piece
-from utils import Coord
+from utils import Coord, PieceSymbol, PieceError
 
 class PieceFactory:
     """
@@ -10,13 +10,13 @@ class PieceFactory:
     def __init__(self):
         self.piece_classes = {}
     
-    def register_piece(self, piece_symbol: str, piece_class: Piece) -> None:
+    def register_piece(self, piece_symbol: PieceSymbol, piece_class: Piece) -> None:
         """
         Register a piece class with the factory.
         """
         self.piece_classes[piece_symbol] = piece_class
 
-    def unregister_piece(self, piece_symbol: str) -> None:
+    def unregister_piece(self, piece_symbol: PieceSymbol) -> None:
         """
         Unregister a piece class from the factory.
         """
@@ -32,17 +32,17 @@ class PieceFactory:
             piece_cls = getattr(module, piece_name)
             self.register_piece(config.get_piece_symbol(piece_name), piece_cls)            
 
-    def create_piece(self, piece_name: str, position: Coord) -> Piece:
+    def create_piece(self, piece_symbol: PieceSymbol, position: Coord) -> Piece:
         """
         Create a piece. Upper case for white, lower case for black.
         """
-        if piece_name == " " or piece_name is None:
+        if piece_symbol == " " or piece_symbol is None:
             return None
         
-        side = piece_name.isupper() # True if piece is white, False if black
-        piece_cls = self.piece_classes.get(piece_name.upper())
+        side = piece_symbol.isupper() # True if piece is white, False if black
+        piece_cls = self.piece_classes.get(piece_symbol.upper())
         if not piece_cls:
-            raise ValueError(f"Piece `{piece_name}` is not registered.")
+            raise PieceError(f"Piece `{piece_symbol}` is not registered.")
         return piece_cls(side, position)
 
         

@@ -81,13 +81,13 @@ class Coord:
         """
         return abs(self.x - other.x) <= 1 and abs(self.y - other.y) <= 1
     
-    def is_forward(self, other: Coord, side: bool) -> bool:
+    def is_forward(self, other: Coord, side: Side) -> bool:
         """
         Check if the position is forward to another position, according to the side.
         """
         return (side and self.y < other.y) or (not side and self.y > other.y)
     
-    def is_backward(self, other: Coord, side: bool) -> bool:
+    def is_backward(self, other: Coord, side: Side) -> bool:
         """
         Check if the position is backward to another position.
         """
@@ -114,7 +114,7 @@ class Move:
     fr: Coord
     to: Coord
     move_type: MoveType = "move"
-    piece: PieceSymbol = None
+    piece: PieceSymbol | None = None
     
     @classmethod
     def null(cls) -> Move:
@@ -138,9 +138,14 @@ class InvalidMoveError(ValueError):
     Raised when an invalid move is attempted.
     """
 
-class InvalidPositionError(ValueError):
+class PositionError(ValueError):
     """
     Raised when an invalid position is attempted.
+    """
+
+class PieceError(ValueError):
+    """
+    Raised when an invalid piece is attempted.
     """
 
 class FENError(ValueError):

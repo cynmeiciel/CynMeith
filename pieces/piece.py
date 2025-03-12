@@ -1,13 +1,13 @@
 from core.config import Config
 from abc import ABC, abstractmethod
-from utils.aliases import Coord
+from utils.aliases import Coord, Side
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from core.board import Board
 
 class Piece(ABC):
-    def __init__(self, side: bool, position: Coord):
+    def __init__(self, side: Side, position: Coord):
         self.side: bool = side # "True" for white, "False" for black
         self.position: Coord = position
         self.valid_moves: list[Coord] = [] # Cache for valid moves
@@ -30,6 +30,9 @@ class Piece(ABC):
     
     def is_white(self) -> bool:
         return self.side
+    
+    def move(self, new_position: Coord):
+        self.position = new_position
     
     ### RULES
     

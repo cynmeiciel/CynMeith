@@ -1,7 +1,9 @@
 from core.piece_factory import PieceFactory
 from core.config import Config
 from pieces.piece import Piece
-from utils import Coord, fen_parser
+from utils import Coord, Side, PieceError, InvalidMoveError, PositionError
+from utils import Side, PieceError, InvalidMoveError, PositionError
+from utils import fen_parser
 
 class Board:
     def __init__(self, config: Config):
@@ -23,7 +25,7 @@ class Board:
             for c, piece in enumerate(row):
                 if piece != " ":
                     position = Coord(r, c)
-                    self.board[r][c] = self.factory.create_piece(piece, position)
+                    self.set_at(position, self.factory.create_piece(piece, position))
     
     def __str__(self):
         return "\n".join(" ".join(piece.get_symbol(self.config) if piece else "_" for piece in row) for row in self.board)
@@ -38,43 +40,50 @@ class Board:
         """
         Get the piece at a given position.
         """
+        if not self.is_in_bounds(position):
+            raise PositionError(f"Position out of bounds {position}")
         return self.board[position.x][position.y]
     
     def set_at(self, position: Coord, piece: Piece):
         """
-        Set a piece at a given position.
+        Set a piece at a given position.s
         """
+        if not self.is_in_bounds(position):
+            raise PositionError(f"Position out of bounds {position}")
         self.board[position.x][position.y] = piece
         
     def move_piece(self, start: Coord, end: Coord):
-        piece = self.board[start.x][start.y]
+        piece: Piece = self.at(start)
         if piece is None:
-            raise ValueError("No piece at starting position")
+            raise PieceError("No piece at starting position")
         if not piece.is_valid_move(end):
-            raise ValueError("Invalid move")
-        self.board[start.x][start.y] = None
-        self.board[end.x][end.y] = piece
-        piece.position = end
+            raise InvalidMoveError("Invalid move!")
+        self.set_at(start, None)
+        self.set_at(end, piece)
+        piece.move(end)
         return piece
     
     def update_valid_moves(self, moved_piece: Piece, start: Coord, end: Coord):
         """
         Update the valid moves for all pieces.
         """
-        
-    
         for row in self.board:
             for piece in row:
                 if piece is not None and piece.is_white() != moved_piece.is_white():
                     piece.update_valid_moves(self)
     
     ### Helpers
+    def is_in_bounds(self, position: Coord) -> bool:
+        """
+        Check if a position is in bounds.
+        """
+        return position.x >= 0 and position.x < self.width and position.y >= 0 and position.y < self.height
     
     def is_empty(self, position: Coord) -> bool:
         """
         Check if a position is empty.
         """
-        return self.board[position.x][position.y] is None
+        return self.at(position) is None
     
     def is_empty_line(self, start: Coord, end: Coord) -> bool:
         """
@@ -90,11 +99,11 @@ class Board:
             position += direction
         return True
     
-    def is_enemy(self, position: Coord, side: bool) -> bool:
+    def is_enemy(self, position: Coord, side: Side) -> bool:
         """
         Check if a position contains an enemy piece.
         """
-        piece = self.board[position.x][position.y]
+        piece = self.at(position)
         return piece is not None and piece.is_white() != side
     
     
