@@ -1,8 +1,7 @@
 from core.piece_factory import PieceFactory
 from core.config import Config
 from pieces.piece import Piece
-from utils import Coord, Side, PieceError, InvalidMoveError, PositionError
-from utils import Side, PieceError, InvalidMoveError, PositionError
+from utils import Coord, PieceClass, Side, PieceError, InvalidMoveError, PositionError
 from utils import fen_parser
 
 class Board:
@@ -36,6 +35,18 @@ class Board:
     def __iter__(self):
         return iter(self.board)
     
+    def clear(self):
+        """
+        Clear the board.
+        """
+        self.board = [[None for _ in range(self.width)] for _ in range(self.height)]
+        
+    def pieces(self, piece_type: PieceClass, side: Side) -> list[Piece]:
+        """
+        Get all pieces of a given criteria.
+        """
+        return [piece for row in self.board for piece in row if piece is not None and isinstance(piece, piece_type) and piece.get_side() == side]
+    
     def at(self, position: Coord) -> Piece:
         """
         Get the piece at a given position.
@@ -51,6 +62,20 @@ class Board:
         if not self.is_in_bounds(position):
             raise PositionError(f"Position out of bounds {position}")
         self.board[position.x][position.y] = piece
+        
+    def type_at(self, position: Coord) -> PieceClass:
+        """
+        Get the type of piece at a given position.
+        """
+        piece = self.at(position)
+        return type(piece) if piece is not None else None
+    
+    def side_at(self, position: Coord) -> Side:
+        """
+        Get the side of the piece at a given position.
+        """
+        piece = self.at(position)
+        return piece.get_side() if piece is not None else None    
         
     def move_piece(self, start: Coord, end: Coord):
         piece: Piece = self.at(start)
@@ -69,7 +94,7 @@ class Board:
         """
         for row in self.board:
             for piece in row:
-                if piece is not None and piece.is_white() != moved_piece.is_white():
+                if piece is not None and piece.get_side() != moved_piece.get_side():
                     piece.update_valid_moves(self)
     
     ### Helpers
@@ -104,6 +129,6 @@ class Board:
         Check if a position contains an enemy piece.
         """
         piece = self.at(position)
-        return piece is not None and piece.is_white() != side
+        return piece is not None and piece.get_side() != side
     
     

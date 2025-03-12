@@ -28,7 +28,7 @@ class Piece(ABC):
         else:    
             return symbol.lower()
     
-    def is_white(self) -> bool:
+    def get_side(self) -> Side:
         return self.side
     
     def move(self, new_position: Coord):

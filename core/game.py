@@ -3,7 +3,7 @@ from core.config import Config
 from utils import Coord, Side
 from pieces import Piece
 
-class Engine:
+class Game:
     """
     Class representing a game. 
     """
@@ -37,6 +37,6 @@ class Engine:
         piece = self.board.at(position)
         if piece is None:
             return None
-        if piece.is_white() != self.turn:
+        if piece.get_side() != self.turn:
             return None
         return piece
