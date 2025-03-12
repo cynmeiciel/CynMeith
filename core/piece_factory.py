@@ -41,8 +41,8 @@ class PieceFactory:
         
         side = piece_name.isupper() # True if piece is white, False if black
         piece_cls = self.piece_classes.get(piece_name.upper())
-        if piece_cls:
-            return piece_cls(side, position)
-        else:
-            raise ValueError(f"Piece `{piece_name}` was not registered with the factory.")
+        if not piece_cls:
+            raise ValueError(f"Piece `{piece_name}` is not registered.")
+        return piece_cls(side, position)
+
         

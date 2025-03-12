@@ -1,13 +1,31 @@
+"""
+Contains type aliases and dataclasses for the game.
+"""
+
 from __future__ import annotations
 from dataclasses import dataclass
+from enum import Enum
+from typing import TypeAlias
+
+class Side(Enum):
+    FIRST = True
+    SECOND = False
+    
+PieceSymbol: TypeAlias = str
+PieceClass: TypeAlias = type
+PieceName: TypeAlias = str
 
 @dataclass(frozen=True)
 class Coord:
     """
-    A class to represent a 2D coordinate.
+    Represents a 2D coordinate.
     """
     x: int
     y: int
+    
+    @classmethod
+    def null(cls) -> Coord:
+        return cls(-1, -1)
 
     def __add__(self, other: Coord) -> Coord:
         return Coord(self.x + other.x, self.y + other.y)
@@ -17,7 +35,10 @@ class Coord:
     
     def __str__(self):
         return f"({self.x}, {self.y})"
-
+    
+    def __bool__(self):
+        return self.x != -1 and self.y != -1
+    
     def is_lshape(self, other: Coord) -> bool:
         """
         Check if the position is reachable in an L-shape (Knight's movement).
@@ -81,4 +102,48 @@ class Coord:
         dx = other.x - self.x
         dy = other.y - self.y
         return Coord(dx // abs(dx) if dx else 0, dy // abs(dy) if dy else 0)    
+
+MoveType: TypeAlias = str
+
+@dataclass(frozen=True)
+class Move:
+    """
+    Represents a move from one position to another, with a `move_type` and `piece` field for extra information (promotion, drop, etc.).
+    Supports null.
+    """
+    fr: Coord
+    to: Coord
+    move_type: MoveType = "move"
+    piece: PieceSymbol = None
     
+    @classmethod
+    def null(cls) -> Move:
+        return cls(Coord.null(), Coord.null())
+    
+    def __bool__(self):
+        return bool(self.fr) and bool(self.to)
+
+class Ending(Enum):
+    """
+    Represents the ending of a game.
+    """
+    pass
+
+FENStr: TypeAlias = str
+
+
+### ERRORS
+class InvalidMoveError(ValueError):
+    """
+    Raised when an invalid move is attempted.
+    """
+
+class InvalidPositionError(ValueError):
+    """
+    Raised when an invalid position is attempted.
+    """
+
+class FENError(ValueError):
+    """
+    Raised when an invalid FEN string is attempted.
+    """

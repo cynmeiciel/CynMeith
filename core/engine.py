@@ -5,7 +5,7 @@ from core.move_validator import MoveValidator
 from utils import Coord
 from pieces import Piece
 
-class Game:
+class Engine:
     """
     Class representing a game. 
     """
@@ -13,19 +13,10 @@ class Game:
         # Load the configuration
         self.config = Config(f"config/{config_name}.yaml")
         
-        self._init_board()
-        self.turn = True
-        self.state = "ONGOING" # "ONGOING", "CHECKMATE", "STALEMATE", "CHECK"
-        self.game_log = []
-    
-    def _init_board(self):
-        """
-        Initialize the board.
-        """
-        # self.config.
-        
         self.board = Board(self.config)    
-        
+        self.turn = True
+        self.state = None
+            
     def get_valid_moves(self, position: Coord) -> list[Coord]:
         """
         Get the valid moves for a piece at a given position.

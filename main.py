@@ -1,7 +1,7 @@
-from core.game import Game
+from core.engine import Engine
 
 if __name__ == "__main__":
-    game = Game()
-    print(game.board.config.fen)
+    game = Engine()
+    print(game.board)
     
     

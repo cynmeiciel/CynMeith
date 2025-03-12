@@ -11,3 +11,5 @@ This chess project is designed and expected to be easily configurable, modular a
 - **Modularity**: The game is designed to be modular, allowing for easy replacement or extension.
 - **Configurability**: The game can be configured using external configuration files, making it easy to change the setup without modifying the code.
 - **Extendability**: New rules, pieces, and features can be added with minimal changes to the existing codebase.
+
+# Task to do: Finish the engine, make it playable first, then implement chess, and then improve the performance last.

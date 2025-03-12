@@ -1,6 +1,4 @@
 import yaml
-# from importlib import import_module
-# from core.piece_factory import PieceFactory
 
 class Config:
     """
@@ -22,17 +20,7 @@ class Config:
         return self.pieces[piece][prop]
     
     def get_piece_path(self, piece: str):
-        return self.pieces[piece]["class_path"]
+        return self.pieces[piece].get("class_path", piece.lower())
     
     def get_piece_symbol(self, piece: str):
-        return self.pieces[piece]["symbol"]
-    
-    # def register_pieces(self, factory: PieceFactory):
-    #     """
-    #     Register all pieces with the factory.
-    #     """
-    #     for piece_name, piece_data in self.pieces.items():
-    #         module = import_module(piece_data["class_path"])
-    #         piece_cls = getattr(module, piece_name)
-    #         factory.register_piece(piece_data["symbol"], piece_cls)
-            
+        return self.pieces[piece].get("symbol", piece[0].upper())

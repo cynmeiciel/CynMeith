@@ -15,8 +15,10 @@ class Board:
         
         self._init_pieces()
         
+        self.log = []
+        
     def _init_pieces(self):
-        grid = fen_parser(self.config.fen)
+        grid = fen_parser(self.config.fen, self.config.width, self.config.height)
         for r, row in enumerate(grid):
             for c, piece in enumerate(row):
                 if piece != " ":
