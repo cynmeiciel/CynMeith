@@ -20,48 +20,48 @@ class Coord:
     """
     Represents a 2D coordinate.
     """
-    x: int
-    y: int
+    r: int
+    c: int
     
     @classmethod
     def null(cls) -> Coord:
         return cls(-1, -1)
 
     def __add__(self, other: Coord) -> Coord:
-        return Coord(self.x + other.x, self.y + other.y)
+        return Coord(self.r + other.r, self.c + other.c)
     
     def __sub__(self, other: Coord) -> Coord:
-        return Coord(self.x - other.x, self.y - other.y)
+        return Coord(self.r - other.r, self.c - other.c)
     
     def __str__(self):
-        return f"({self.x}, {self.y})"
+        return f"({self.r}, {self.c})"
     
     def __bool__(self):
-        return self.x != -1 and self.y != -1
+        return self.r != -1 and self.c != -1
     
     def is_lshape(self, other: Coord) -> bool:
         """
         Check if the position is reachable in an L-shape (Knight's movement).
         """
-        return (abs(self.x - other.x) == 2 and abs(self.y - other.y) == 1) or (abs(self.x - other.x) == 1 and abs(self.y - other.y) == 2)
+        return (abs(self.r - other.r) == 2 and abs(self.c - other.c) == 1) or (abs(self.r - other.r) == 1 and abs(self.c - other.c) == 2)
 
     def is_diagonal(self, other: Coord) -> bool:
         """
         Check if the position is reachable in a diagonal line.
         """
-        return abs(self.x - other.x) == abs(self.y - other.y)
+        return abs(self.r - other.r) == abs(self.c - other.c)
     
     def is_horizontal(self, other: Coord) -> bool:
         """
         Check if the position is reachable in a horizontal line.
         """
-        return self.x == other.x
+        return self.r == other.r
     
     def is_vertical(self, other: Coord) -> bool:
         """
         Check if the position is reachable in a vertical line.
         """
-        return self.y == other.y
+        return self.c == other.c
     
     def is_orthogonal(self, other: Coord) -> bool:
         """
@@ -79,19 +79,19 @@ class Coord:
         """
         Check if the position is adjacent to another position.
         """
-        return abs(self.x - other.x) <= 1 and abs(self.y - other.y) <= 1
+        return abs(self.r - other.r) <= 1 and abs(self.c - other.c) <= 1
     
     def is_forward(self, other: Coord, side: Side) -> bool:
         """
         Check if the position is forward to another position, according to the side.
         """
-        return (side and self.y < other.y) or (not side and self.y > other.y)
+        return (side and self.r < other.r) or (not side and self.r > other.r)
     
     def is_backward(self, other: Coord, side: Side) -> bool:
         """
         Check if the position is backward to another position.
         """
-        return (side and self.y > other.y) or (not side and self.y < other.y)
+        return (side and self.c > other.c) or (not side and self.c < other.c)
     
     ###
     
@@ -99,26 +99,26 @@ class Coord:
         """
         Get the Chebyshev distance to another position.
         """
-        return max(abs(self.x - other.x), abs(self.y - other.y))
+        return max(abs(self.r - other.r), abs(self.c - other.c))
     
     def manhattan_to(self, other: Coord) -> int:
         """
         Get the Manhattan distance to another position.
         """
-        return abs(self.x - other.x) + abs(self.y - other.y)
+        return abs(self.r - other.r) + abs(self.c - other.c)
     
     def mirror(self, width: int, height: int) -> Coord:
         """
         Mirror the position across the board.
         """
-        return Coord(width - self.x - 1, height - self.y - 1)
+        return Coord(width - self.r - 1, height - self.c - 1)
     
     def direction_unit(self, other: Coord) -> Coord:
         """
         Get the unit direction vector to another position.
         """
-        dx = other.x - self.x
-        dy = other.y - self.y
+        dx = other.r - self.r
+        dy = other.c - self.c
         return Coord(dx // abs(dx) if dx else 0, dy // abs(dy) if dy else 0)    
 
 MoveType: TypeAlias = str

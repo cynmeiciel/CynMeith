@@ -71,7 +71,7 @@ class Board:
         """
         if not self.is_in_bounds(position):
             raise PositionError(f"Position out of bounds {position}")
-        return self.board[position.x][position.y]
+        return self.board[position.r][position.c]
     
     def set_at(self, position: Coord, piece: Piece):
         """
@@ -79,7 +79,7 @@ class Board:
         """
         if not self.is_in_bounds(position):
             raise PositionError(f"Position out of bounds {position}")
-        self.board[position.x][position.y] = piece
+        self.board[position.r][position.c] = piece
         
     def type_at(self, position: Coord) -> PieceClass:
         """
@@ -110,12 +110,21 @@ class Board:
         piece = self.at(start)
         if piece is None:
             raise PieceError("No piece at starting position")
-        if not piece.is_valid_move(end):
+        if not piece.is_valid_move(end, self):
             raise InvalidMoveError("Invalid move!")
         self.set_at(start, None)
         self.set_at(end, piece)
         piece.move(end)
         return piece
+    
+    def get_valid_moves(self, position: Coord) -> list[Coord]:
+        """
+        Get the valid moves for a piece at a given position.
+        """
+        piece = self.at(position)
+        if piece is None:
+            return []
+        return self.validator.get_validated_moves(piece)
     
     def update_valid_moves(self, moved_piece: Piece, start: Coord, end: Coord):
         """
@@ -131,7 +140,7 @@ class Board:
         """
         Check if a position is in bounds.
         """
-        return position.x >= 0 and position.x < self.width and position.y >= 0 and position.y < self.height
+        return position.r >= 0 and position.r < self.width and position.c >= 0 and position.c < self.height
     
     def is_empty(self, position: Coord) -> bool:
         """

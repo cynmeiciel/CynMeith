@@ -23,13 +23,19 @@ class MoveValidator:
         """
         Validate a move for a given piece.
         """
-        piece = move.piece
+        piece = self.board.at(move.fr)
         new_position = move.to
         if not self.board.is_in_bounds(new_position):
             return False
-        if not piece.is_valid_move(new_position):
+        if not piece.is_valid_move(new_position, self.board):
             return False
         if not self.board.is_empty(new_position):
             return False
         
         return True
+    
+    def get_validated_moves(self, piece: Piece) -> list[Coord]:
+        """
+        Get the valid moves for a piece.
+        """
+        return [coord for coord in piece.get_valid_moves(self.board) if self.validate_move(Move(piece.position, coord))]

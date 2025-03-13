@@ -8,6 +8,6 @@ if __name__ == "__main__":
         for j in range(8):
             piece = game.board.at(Coord(i, j))
             if piece is not None:
-                print(piece.get_valid_moves(game.board))
+                print(piece, piece.get_valid_moves(game.board))
     print(game.board)
     
