@@ -63,9 +63,9 @@ class Coord:
         """
         return self.y == other.y
     
-    def is_straight(self, other: Coord) -> bool:
+    def is_orthogonal(self, other: Coord) -> bool:
         """
-        Check if the position is reachable in a straight line.
+        Check if the position is reachable in an orthogonal line.
         """
         return self.is_horizontal(other) or self.is_vertical(other)
     
@@ -73,7 +73,7 @@ class Coord:
         """
         Check if the position is reachable in a straight line or a diagonal line.
         """
-        return self.is_straight(other) or self.is_diagonal(other)
+        return self.is_orthogonal(other) or self.is_diagonal(other)
     
     def is_adjacent(self, other: Coord) -> bool:
         """
@@ -94,6 +94,24 @@ class Coord:
         return (side and self.y > other.y) or (not side and self.y < other.y)
     
     ###
+    
+    def chebyshev_to(self, other: Coord) -> int:
+        """
+        Get the Chebyshev distance to another position.
+        """
+        return max(abs(self.x - other.x), abs(self.y - other.y))
+    
+    def manhattan_to(self, other: Coord) -> int:
+        """
+        Get the Manhattan distance to another position.
+        """
+        return abs(self.x - other.x) + abs(self.y - other.y)
+    
+    def mirror(self, width: int, height: int) -> Coord:
+        """
+        Mirror the position across the board.
+        """
+        return Coord(width - self.x - 1, height - self.y - 1)
     
     def direction_unit(self, other: Coord) -> Coord:
         """
@@ -146,6 +164,11 @@ class PositionError(ValueError):
 class PieceError(ValueError):
     """
     Raised when an invalid piece is attempted.
+    """
+
+class MoveHistoryError(IndexError):
+    """
+    Raised when an invalid move history operation is attempted.
     """
 
 class FENError(ValueError):

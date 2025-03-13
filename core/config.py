@@ -1,4 +1,4 @@
-import yaml
+from yaml import safe_load
 from utils import PieceName
 
 class Config:
@@ -8,7 +8,7 @@ class Config:
     """
     def __init__(self, config_path: str):
         with open(config_path, "r") as file:
-            _data = yaml.safe_load(file)
+            _data = safe_load(file)
             self.pieces = _data["pieces"]
             self.width = _data["width"]
             self.height = _data["height"]

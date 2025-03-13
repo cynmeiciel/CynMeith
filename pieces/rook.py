@@ -6,4 +6,4 @@ class Rook(Piece):
         super().__init__(color, position)
         
     def is_valid_move(self, new_position: Coord, board) -> bool:
-        return self.position.is_straight(new_position)
+        return self.position.is_orthogonal(new_position)

@@ -1,10 +1,18 @@
 from core.piece_factory import PieceFactory
 from core.config import Config
+from core.move_validator import MoveValidator
+from core.move_history import MoveHistory
 from pieces.piece import Piece
-from utils import Coord, PieceClass, Side, PieceError, InvalidMoveError, PositionError
+from utils import Coord, PieceClass, Side, Move, PieceError, InvalidMoveError, PositionError
 from utils import fen_parser
 
 class Board:
+    """
+    The Board class represents the game board and acts as the central interface for managing game state.
+    
+    It provides methods for placing, removing, and moving pieces while ensuring that the core game mechanics remain 
+    stable.
+    """
     def __init__(self, config: Config):
         self.config = config
         self.width = config.width
@@ -13,6 +21,9 @@ class Board:
         
         self.factory = PieceFactory()
         self.factory.register_pieces(config)
+        
+        self.validator = MoveValidator(self)
+        self.history = MoveHistory(self)
         
         self._init_pieces()
         
@@ -34,6 +45,13 @@ class Board:
     
     def __iter__(self):
         return iter(self.board)
+    
+    def reset(self):
+        """
+        Reset the board to its initial state.
+        """
+        self.clear()
+        self._init_pieces()
     
     def clear(self):
         """
@@ -77,8 +95,19 @@ class Board:
         piece = self.at(position)
         return piece.get_side() if piece is not None else None    
         
-    def move_piece(self, start: Coord, end: Coord):
-        piece: Piece = self.at(start)
+    def move(self, move: Move):
+        """
+        Move a piece from one position to another.
+        """
+        piece = self.move_from_coord(move.fr, move.to)
+        self.history.add_move(move, piece)
+        self.update_valid_moves(piece, move.fr, move.to)
+    
+    def move_from_coord(self, start: Coord, end: Coord):
+        """
+        Move a piece from one position to another.
+        """
+        piece = self.at(start)
         if piece is None:
             raise PieceError("No piece at starting position")
         if not piece.is_valid_move(end):
@@ -114,7 +143,7 @@ class Board:
         """
         Check if the line (including diagonals) between two positions is empty.
         """
-        if not (start.is_straight(end) or start.is_diagonal(end)):
+        if not (start.is_orthogonal(end) or start.is_diagonal(end)):
             return False
         direction = start.direction_unit(end)
         position = start + direction

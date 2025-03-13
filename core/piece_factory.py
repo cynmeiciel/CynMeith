@@ -1,4 +1,5 @@
 from importlib import import_module
+
 from core.config import Config
 from pieces.piece import Piece
 from utils import Coord, PieceSymbol, PieceError

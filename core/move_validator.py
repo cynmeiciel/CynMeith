@@ -1,14 +1,35 @@
-from core.board import Board
-from utils import Coord
+from typing import TYPE_CHECKING
+
+from utils import Coord, Move
 from pieces import Piece
 
+if TYPE_CHECKING:
+    from core.board import Board
+    
 class MoveValidator:
     """
-    Class for validating moves.
+    This class is responsible for determining whether a move is legal based on general game rules that apply to all pieces.
+
+    Instead of applying move logic directly inside the Board class, MoveValidator handles validation for individual 
+    pieces while taking into account board conditions such as collisions, captures, and special moves.
+
+    This class is intended to be subclassed if users wish to implement custom move validation rules.
     """
     
-    def __init__(self, board: Board):
+    def __init__(self, board: "Board"):
         self.board = board 
         
+    def validate_move(self, move: Move) -> bool:
+        """
+        Validate a move for a given piece.
+        """
+        piece = move.piece
+        new_position = move.to
+        if not self.board.is_in_bounds(new_position):
+            return False
+        if not piece.is_valid_move(new_position):
+            return False
+        if not self.board.is_empty(new_position):
+            return False
         
-    # def 
+        return True
