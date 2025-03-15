@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from utils import Coord, Move
-from pieces import Piece
+from core.piece import Piece
 
 if TYPE_CHECKING:
     from core.board import Board
@@ -25,8 +25,6 @@ class MoveValidator:
         """
         piece = self.board.at(move.fr)
         new_position = move.to
-        if not self.board.is_in_bounds(new_position):
-            return False
         if not piece.is_valid_move(new_position, self.board):
             return False
         if not self.board.is_empty(new_position):

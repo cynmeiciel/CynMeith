@@ -1,15 +1,15 @@
 from core.board import Board
 from core.config import Config
 from utils import Coord, Side
-from pieces import Piece
+from core.piece import Piece
 
 class Game:
     """
-    Class representing a game. 
+    Class representing a chess game. 
     """
-    def __init__(self, config_name: str = "standard"):
+    def __init__(self, config_path: str):
         # Load the configuration
-        self.config = Config(f"config/{config_name}.yaml")
+        self.config = Config(config_path)
         
         self.board = Board(self.config)    
         self.turn: Side = Side.FIRST

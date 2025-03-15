@@ -2,7 +2,7 @@ from core.piece_factory import PieceFactory
 from core.config import Config
 from core.move_validator import MoveValidator
 from core.move_history import MoveHistory
-from pieces.piece import Piece
+from core.piece import Piece
 from utils import Coord, PieceClass, Side, Move, PieceError, InvalidMoveError, PositionError
 from utils import fen_parser
 
@@ -13,7 +13,7 @@ class Board:
     It provides methods for placing, removing, and moving pieces while ensuring that the core game mechanics remain 
     stable.
     """
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, move_validator: type[MoveValidator] = MoveValidator, move_history: type[MoveHistory] = MoveHistory):
         self.config = config
         self.width = config.width
         self.height = config.height
@@ -22,8 +22,8 @@ class Board:
         self.factory = PieceFactory()
         self.factory.register_pieces(config)
         
-        self.validator = MoveValidator(self)
-        self.history = MoveHistory(self)
+        self.validator = move_validator(self)
+        self.history = move_history(self)
         
         self._init_pieces()
         

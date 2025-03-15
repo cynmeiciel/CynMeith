@@ -1,7 +1,7 @@
 from importlib import import_module
 
 from core.config import Config
-from pieces.piece import Piece
+from core.piece import Piece
 from utils import Coord, PieceSymbol, PieceError
 
 class PieceFactory:
@@ -29,7 +29,7 @@ class PieceFactory:
         """
         for piece_name in config.pieces:
             path = config.get_piece_path(piece_name)
-            module = import_module(f"pieces.{path}")
+            module = import_module(path)
             piece_cls = getattr(module, piece_name)
             self.register_piece(config.get_piece_symbol(piece_name), piece_cls)            
 

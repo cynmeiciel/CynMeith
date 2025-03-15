@@ -1,9 +1,9 @@
-from core.game import Game
+from examples.chess.game import Game
 from utils import Coord
 import time
 
 if __name__ == "__main__":
-    game = Game()
+    game = Game("examples/chess/chess.yaml")
     for i in range(8):
         for j in range(8):
             piece = game.board.at(Coord(i, j))

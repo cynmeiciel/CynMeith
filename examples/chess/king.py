@@ -1,9 +1,9 @@
-from .piece import Piece
+from core.piece import Piece
 from utils import Coord
 
-class Bishop(Piece):
+class King(Piece):
     def __init__(self, color: str, position: Coord):
         super().__init__(color, position)
         
     def is_valid_move(self, new_position: Coord, board) -> bool:
-        return self.position.is_diagonal(new_position)
+        return self.position.is_adjacent(new_position)

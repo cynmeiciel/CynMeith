@@ -1,4 +1,4 @@
-from .piece import Piece
+from core.piece import Piece
 from utils import Coord
 
 class Rook(Piece):
