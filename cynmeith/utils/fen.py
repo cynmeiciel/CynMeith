@@ -1,4 +1,4 @@
-from utils.aliases import FENStr, FENError, PieceSymbol
+from .aliases import FENStr, FENError, PieceSymbol
 
 def fen_parser(fen: FENStr, width: int, height: int, enclosures: list[str]=["'",'"']) -> list[list[PieceSymbol]]:
     """

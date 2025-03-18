@@ -1,10 +1,11 @@
-from core.config import Config
 from abc import ABC, abstractmethod
-from utils.aliases import Coord, Side
+
+from .config import Config
+from ..utils.aliases import Coord, Side
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from core.board import Board
+    from .board import Board
 
 class Piece(ABC):
     def __init__(self, side: Side, position: Coord):

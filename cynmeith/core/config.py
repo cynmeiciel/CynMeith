@@ -1,5 +1,5 @@
 from yaml import safe_load
-from utils import PieceName
+from ..utils import PieceName
 
 class Config:
     """

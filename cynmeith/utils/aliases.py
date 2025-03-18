@@ -7,10 +7,10 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TypeAlias
 
-class Side(Enum):
-    FIRST = True
-    SECOND = False
-    
+Side: TypeAlias = bool
+S_FIRST = True
+S_SECOND = False
+
 PieceSymbol: TypeAlias = str
 PieceClass: TypeAlias = type
 PieceName: TypeAlias = str

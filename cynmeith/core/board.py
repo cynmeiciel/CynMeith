@@ -1,10 +1,10 @@
-from core.piece_factory import PieceFactory
-from core.config import Config
-from core.move_validator import MoveValidator
-from core.move_history import MoveHistory
-from core.piece import Piece
-from utils import Coord, PieceClass, Side, Move, PieceError, InvalidMoveError, PositionError
-from utils import fen_parser
+from .piece_factory import PieceFactory
+from .config import Config
+from .move_validator import MoveValidator
+from .move_history import MoveHistory
+from .piece import Piece
+from ..utils import Coord, PieceClass, Side, Move, PieceError, InvalidMoveError, PositionError
+from ..utils import fen_parser
 
 class Board:
     """
@@ -140,7 +140,7 @@ class Board:
         """
         Check if a position is in bounds.
         """
-        return position.r >= 0 and position.r < self.width and position.c >= 0 and position.c < self.height
+        return position.r >= 0 and position.r < self.height and position.c >= 0 and position.c < self.width
     
     def is_empty(self, position: Coord) -> bool:
         """

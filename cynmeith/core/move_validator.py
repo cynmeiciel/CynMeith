@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING
 
-from utils import Coord, Move
-from core.piece import Piece
+from ..utils import Coord, Move
+from .piece import Piece
 
 if TYPE_CHECKING:
-    from core.board import Board
+    from .board import Board
     
 class MoveValidator:
     """

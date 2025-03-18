@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 
-from utils import Move, MoveHistoryError
+from ..utils import Move, MoveHistoryError
 
 if TYPE_CHECKING:
-    from core.board import Board
+    from .board import Board
     
 class MoveHistory:
     """

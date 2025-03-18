@@ -1,7 +1,5 @@
-from core.board import Board
-from core.config import Config
-from utils import Coord, Side
-from core.piece import Piece
+from cynmeith import Board, Config, Piece
+from cynmeith.utils import Coord, Side, S_FIRST
 
 class Game:
     """
@@ -12,7 +10,7 @@ class Game:
         self.config = Config(config_path)
         
         self.board = Board(self.config)    
-        self.turn: Side = Side.FIRST
+        self.turn: Side = S_FIRST
         self.state = None
             
     def get_valid_moves(self, position: Coord) -> list[Coord]:

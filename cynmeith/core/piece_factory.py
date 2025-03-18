@@ -1,8 +1,8 @@
 from importlib import import_module
 
-from core.config import Config
-from core.piece import Piece
-from utils import Coord, PieceSymbol, PieceError
+from .config import Config
+from .piece import Piece
+from ..utils import Coord, PieceSymbol, PieceError
 
 class PieceFactory:
     """

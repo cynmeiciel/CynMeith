@@ -1,5 +1,5 @@
-from core.piece import Piece
-from utils import Coord
+from cynmeith import Piece
+from cynmeith.utils import Coord
 
 class King(Piece):
     def __init__(self, color: str, position: Coord):
