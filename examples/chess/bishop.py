@@ -1,5 +1,4 @@
-from core.piece import Piece
-from utils import Coord
+from cynmeith import Piece
 
 class Bishop(Piece):
     def __init__(self, color: str, position: Coord):
