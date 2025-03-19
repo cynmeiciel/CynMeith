@@ -7,12 +7,11 @@ if TYPE_CHECKING:
     from .board import Board
     
 
-    
-class MoveValidator:
+class MoveManager:
     """
-    This class is responsible for determining whether a move is legal based on general game rules that apply to all pieces.
+    This class is responsible for determining whether an move is legal based on general game rules that apply to all pieces.
     
-    This class is intended to be subclassed if users wish to implement custom move validation rules.
+    This class is intended to be subclassed if users wish to implement custom rules.
     """
     
     def __init__(self, board: "Board"):
@@ -22,8 +21,8 @@ class MoveValidator:
         """
         Validate a move for a given piece.
         """
-        piece = self.board.at(move.fr)
-        new_position = move.to
+        piece = self.board.at(move.start)
+        new_position = move.end
         if not piece.is_valid_move(new_position, self.board):
             return False
         if not self.board.is_empty(new_position):

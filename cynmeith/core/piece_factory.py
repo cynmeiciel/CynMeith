@@ -16,6 +16,7 @@ class PieceFactory:
         Register a piece class with the factory.
         """
         self.piece_classes[piece_symbol] = piece_class
+        piece_class.symbol = piece_symbol
 
     def unregister_piece(self, piece_symbol: PieceSymbol) -> None:
         """

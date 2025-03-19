@@ -1,9 +1,9 @@
 from .piece_factory import PieceFactory
 from .config import Config
-from .move_validator import MoveValidator
+from .move_manager import MoveManager
 from .move_history import MoveHistory
 from .piece import Piece
-from ..utils import Coord, PieceClass, Side2, Move, PieceError, InvalidMoveError, PositionError
+from ..utils import Coord, PieceSymbol, PieceClass, Side2, Move, PieceError, InvalidMoveError, PositionError
 from ..utils import fen_parser
 
 class Board:
@@ -12,7 +12,7 @@ class Board:
     
     It provides methods for placing, removing, and moving pieces.
     """
-    def __init__(self, config: Config, move_validator: type[MoveValidator] = MoveValidator, move_history: type[MoveHistory] = MoveHistory):
+    def __init__(self, config: Config, move_validator: type[MoveManager] = MoveManager, move_history: type[MoveHistory] = MoveHistory):
         self.config = config
         self.width = config.width
         self.height = config.height
@@ -43,13 +43,15 @@ class Board:
     def __iter__(self):
         return iter(self.board)
     
-    def iter_pieces(self):
+    def iter_pieces(self, none_piece: bool = False):
         """
         Iterate over all pieces on the board.
+        
+        If none_piece is True, the iteration will also include empty positions.
         """
         for row in self.board:
             for piece in row:
-                if piece is not None:
+                if piece is not None or none_piece:
                     yield piece
                     
     def iter_positions(self):
@@ -60,16 +62,16 @@ class Board:
             for c in range(self.width):
                 yield Coord(r, c)
     
-    def iter_enumerate(self):
+    def iter_enumerate(self, none_piece: bool = False):
         """
         Iterate over all pieces on the board with their positions.
         """
         for r, row in enumerate(self.board):
             for c, piece in enumerate(row):
-                if piece is not None:
+                if piece is not None or none_piece:
                     yield Coord(r, c), piece
     
-    def iter_lines(self, start: Coord, end: Coord):
+    def iter_positions_lines(self, start: Coord, end: Coord):
         """
         Iterate over all positions in a line between two positions.
         """
@@ -80,8 +82,34 @@ class Board:
         while position != end:
             yield position
             position += direction
+    
+    def iter_pieces_lines(self, start: Coord, end: Coord, none_piece: bool = False):
+        """
+        Iterate over all pieces in a line between two positions.
+        
+        If none_piece is True, the iteration will also include empty positions.
+        """
+        for position in self.iter_positions_lines(start, end):
+            piece = self.at(position)
+            if piece is not None or none_piece:
+                yield piece
+                if piece is not None:
+                    break
+                
+    def iter_enumerate_lines(self, start: Coord, end: Coord, none_piece: bool = False):
+        """
+        Iterate over all pieces with their positions in a line between two positions.
+        
+        If none_piece is True, the iteration will also include empty positions.
+        """
+        for position in self.iter_positions_lines(start, end):
+            piece = self.at(position)
+            if piece is not None or none_piece:
+                yield position, piece
+                if piece is not None:
+                    break
             
-    def iter_towards(self, start: Coord, direction: Coord):
+    def iter_positions_towards(self, start: Coord, direction: Coord):
         """
         Iterate over all positions in a direction from a starting position.
         """
@@ -90,6 +118,29 @@ class Board:
             yield position
             position += direction
     
+    def iter_pieces_towards(self, start: Coord, direction: Coord):
+        """
+        Iterate over all pieces in a direction from a starting position.
+        """
+        for position in self.iter_positions_towards(start, direction):
+            piece = self.at(position)
+            if piece is not None:
+                yield piece
+                break
+            
+    def iter_enumerate_towards(self, start: Coord, direction: Coord, none_piece: bool = False):
+        """
+        Iterate over all pieces with their positions in a direction from a starting position.
+        
+        If none_piece is True, the iteration will also include empty positions.
+        """
+        for position in self.iter_positions_towards(start, direction):
+            piece = self.at(position)
+            if piece is not None or none_piece:
+                yield position, piece
+                if piece is not None:
+                    break
+                
     def reset(self):
         """
         Reset the board to its initial state.
@@ -103,11 +154,17 @@ class Board:
         """
         self.board = [[None for _ in range(self.width)] for _ in range(self.height)]
         
-    def pieces(self, piece_type: PieceClass, side: Side2) -> list[Piece]:
+    def get_pieces_by_side(self, side: Side2) -> list[Piece]:
         """
-        Get all pieces of a given criteria.
+        Get all pieces of a given side.
         """
-        return [piece for row in self.board for piece in row if piece is not None and isinstance(piece, piece_type) and piece.get_side() == side]
+        return [piece for piece in self.iter_pieces() if piece.get_side() == side]
+    
+    def get_pieces_by_type(self, piece_symbol: PieceSymbol) -> list[Piece]:
+        """
+        Get all pieces of a given type.
+        """
+        return [piece for piece in self.iter_pieces() if piece.symbol == piece_symbol]
     
     def at(self, position: Coord) -> Piece:
         """
@@ -141,7 +198,7 @@ class Board:
         
     def move(self, start: Coord, end: Coord):
         """
-        Move a piece from one position to another.
+        Perform a move by a player, not a piece.
         """
         piece = self.at(start)
         if piece is None:
@@ -152,7 +209,6 @@ class Board:
         self.set_at(end, piece)
         piece.move(end)
         self.history.record_move(Move(start, end))
-        # self.update_valid_moves(piece, start, end)
     
     def get_valid_moves(self, position: Coord) -> list[Coord]:
         """
@@ -162,15 +218,6 @@ class Board:
         if piece is None:
             return []
         return self.validator.get_validated_moves(piece)
-    
-    # def update_valid_moves(self, moved_piece: Piece, start: Coord, end: Coord):
-    #     """
-    #     Update the valid moves for all pieces.
-    #     """
-    #     for row in self.board:
-    #         for piece in row:
-    #             if piece is not None and piece.side != moved_piece.side:
-    #                 piece.update_valid_moves(self)
     
     def is_in_bounds(self, position: Coord) -> bool:
         """

@@ -8,6 +8,8 @@ if TYPE_CHECKING:
     from .board import Board
 
 class Piece(ABC):
+    symbol = ""
+    
     def __init__(self, side: Side2, position: Coord):
         self.side: Side2 = side # "True" for white, "False" for black
         self.position: Coord = position
@@ -18,13 +20,12 @@ class Piece(ABC):
     def __repr__(self) -> str:
         return f"{self.get_side_str()} {self.__class__.__name__}@{self.position}"
     
-    def get_symbol(self, config: Config) -> str:
-        symbol = config.get_piece_symbol(self.__class__.__name__)
+    def get_symbol_with_side(self) -> str:
         if self.side:
-            return symbol.upper()
+            return self.symbol.upper()
         else:    
-            return symbol.lower()
-    
+            return self.symbol.lower()
+       
     def move(self, new_position: Coord):
         """
         Move the piece to a new position.
@@ -43,7 +44,7 @@ class Piece(ABC):
         """
         Get the valid moves for the piece.
        
-        This should be overridden to improve performance since it iterates over the entire board.
+        This should be overridden to improve performance since it iterates over the entire board, and some pieces might not need `is_valid_move`.
         """
         valid_moves = []
         for coord in board.iter_positions():
