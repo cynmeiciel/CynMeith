@@ -1,14 +1,14 @@
 from .aliases import FENStr, FENError, PieceSymbol
 
-def fen_parser(fen: FENStr, width: int, height: int, enclosures: list[str]=["'",'"']) -> list[list[PieceSymbol]]:
+def fen_parser(fen: FENStr, width: int, height: int, enclosures: list[str]=["'",'"'], delimiter: str="/") -> list[list[PieceSymbol]]:
     """
     Parse a FEN string and return a 2D list representing the board.
     Use enclosures to represent pieces with multiple characters.
     """
-    if not isinstance(fen, FENStr) or "/" not in fen:
+    if not isinstance(fen, FENStr):
         raise FENError(f"Invalid FEN: {fen}")
     
-    rows = fen.split("/")
+    rows = fen.split(delimiter)
     if len(rows) != height:
         raise FENError(f"Invalid FEN: Expected {height} rows, but got {len(rows)}")
     

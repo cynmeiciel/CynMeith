@@ -6,13 +6,12 @@ from .piece import Piece
 if TYPE_CHECKING:
     from .board import Board
     
+
+    
 class MoveValidator:
     """
     This class is responsible for determining whether a move is legal based on general game rules that apply to all pieces.
-
-    Instead of applying move logic directly inside the Board class, MoveValidator handles validation for individual 
-    pieces while taking into account board conditions such as collisions, captures, and special moves.
-
+    
     This class is intended to be subclassed if users wish to implement custom move validation rules.
     """
     

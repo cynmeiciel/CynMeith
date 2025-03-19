@@ -1,4 +1,7 @@
-from cynmeith.utils import Side
+from cynmeith import Board, Config
 
-print(Side.FIRST)
-print(Side.SECOND)
+board = Board(Config("examples/chess/timetest.yaml"))
+for pieces in board:
+    for piece in pieces:
+        if piece:
+            pass

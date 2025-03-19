@@ -34,7 +34,7 @@ class MoveHistory:
         """
         Records a move along with the current board state before execution.
         """
-        self.state_stack.append(self.board.copy())  # Store board state
+        # self.state_stack.append(self.board)  # Store board state
         self.move_stack.append(move)
         self.redo_stack.clear()
         self.redo_state_stack.clear()

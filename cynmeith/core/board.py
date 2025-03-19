@@ -3,15 +3,14 @@ from .config import Config
 from .move_validator import MoveValidator
 from .move_history import MoveHistory
 from .piece import Piece
-from ..utils import Coord, PieceClass, Side, Move, PieceError, InvalidMoveError, PositionError
+from ..utils import Coord, PieceClass, Side2, Move, PieceError, InvalidMoveError, PositionError
 from ..utils import fen_parser
 
 class Board:
     """
     The Board class represents the game board and acts as the central interface for managing game state.
     
-    It provides methods for placing, removing, and moving pieces while ensuring that the core game mechanics remain 
-    stable.
+    It provides methods for placing, removing, and moving pieces.
     """
     def __init__(self, config: Config, move_validator: type[MoveValidator] = MoveValidator, move_history: type[MoveHistory] = MoveHistory):
         self.config = config
@@ -26,8 +25,6 @@ class Board:
         self.history = move_history(self)
         
         self._init_pieces()
-        
-        self.log = []
         
     def _init_pieces(self):
         grid = fen_parser(self.config.fen, self.config.width, self.config.height)
@@ -46,6 +43,53 @@ class Board:
     def __iter__(self):
         return iter(self.board)
     
+    def iter_pieces(self):
+        """
+        Iterate over all pieces on the board.
+        """
+        for row in self.board:
+            for piece in row:
+                if piece is not None:
+                    yield piece
+                    
+    def iter_positions(self):
+        """
+        Iterate over all coordinates on the board.
+        """
+        for r in range(self.height):
+            for c in range(self.width):
+                yield Coord(r, c)
+    
+    def iter_enumerate(self):
+        """
+        Iterate over all pieces on the board with their positions.
+        """
+        for r, row in enumerate(self.board):
+            for c, piece in enumerate(row):
+                if piece is not None:
+                    yield Coord(r, c), piece
+    
+    def iter_lines(self, start: Coord, end: Coord):
+        """
+        Iterate over all positions in a line between two positions.
+        """
+        if not (start.is_orthogonal(end) or start.is_diagonal(end)):
+            raise ValueError("Positions are not orthogonal or diagonal")
+        direction = start.direction_unit(end)
+        position = start + direction
+        while position != end:
+            yield position
+            position += direction
+            
+    def iter_towards(self, start: Coord, direction: Coord):
+        """
+        Iterate over all positions in a direction from a starting position.
+        """
+        position = start + direction
+        while self.is_in_bounds(position):
+            yield position
+            position += direction
+    
     def reset(self):
         """
         Reset the board to its initial state.
@@ -59,7 +103,7 @@ class Board:
         """
         self.board = [[None for _ in range(self.width)] for _ in range(self.height)]
         
-    def pieces(self, piece_type: PieceClass, side: Side) -> list[Piece]:
+    def pieces(self, piece_type: PieceClass, side: Side2) -> list[Piece]:
         """
         Get all pieces of a given criteria.
         """
@@ -88,22 +132,14 @@ class Board:
         piece = self.at(position)
         return type(piece) if piece is not None else None
     
-    def side_at(self, position: Coord) -> Side:
+    def side_at(self, position: Coord) -> Side2:
         """
         Get the side of the piece at a given position.
         """
         piece = self.at(position)
         return piece.get_side() if piece is not None else None    
         
-    def move(self, move: Move):
-        """
-        Move a piece from one position to another.
-        """
-        piece = self.move_from_coord(move.fr, move.to)
-        self.history.add_move(move, piece)
-        self.update_valid_moves(piece, move.fr, move.to)
-    
-    def move_from_coord(self, start: Coord, end: Coord):
+    def move(self, start: Coord, end: Coord):
         """
         Move a piece from one position to another.
         """
@@ -115,7 +151,8 @@ class Board:
         self.set_at(start, None)
         self.set_at(end, piece)
         piece.move(end)
-        return piece
+        self.history.record_move(Move(start, end))
+        # self.update_valid_moves(piece, start, end)
     
     def get_valid_moves(self, position: Coord) -> list[Coord]:
         """
@@ -126,16 +163,15 @@ class Board:
             return []
         return self.validator.get_validated_moves(piece)
     
-    def update_valid_moves(self, moved_piece: Piece, start: Coord, end: Coord):
-        """
-        Update the valid moves for all pieces.
-        """
-        for row in self.board:
-            for piece in row:
-                if piece is not None and piece.get_side() != moved_piece.get_side():
-                    piece.update_valid_moves(self)
+    # def update_valid_moves(self, moved_piece: Piece, start: Coord, end: Coord):
+    #     """
+    #     Update the valid moves for all pieces.
+    #     """
+    #     for row in self.board:
+    #         for piece in row:
+    #             if piece is not None and piece.side != moved_piece.side:
+    #                 piece.update_valid_moves(self)
     
-    ### Helpers
     def is_in_bounds(self, position: Coord) -> bool:
         """
         Check if a position is in bounds.
@@ -148,9 +184,10 @@ class Board:
         """
         return self.at(position) is None
     
-    def is_empty_line(self, start: Coord, end: Coord) -> bool:
+    def is_empty_line(self, start: Coord, end: Coord) -> list[Coord]:
         """
         Check if the line (including diagonals) between two positions is empty.
+        This will return False if the start and end positions are not orthogonal or diagonal.
         """
         if not (start.is_orthogonal(end) or start.is_diagonal(end)):
             return False
@@ -162,11 +199,12 @@ class Board:
             position += direction
         return True
     
-    def is_enemy(self, position: Coord, side: Side) -> bool:
+    def is_enemy(self, position: Coord, side: Side2) -> bool:
         """
         Check if a position contains an enemy piece.
         """
         piece = self.at(position)
         return piece is not None and piece.get_side() != side
+    
     
     

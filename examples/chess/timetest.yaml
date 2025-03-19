@@ -1,0 +1,24 @@
+pieces:
+  Pawn:
+    symbol: P
+    class_path: examples.chess.pawn
+  Rook:
+    symbol: R
+    class_path: examples.chess.rook
+  Knight:
+    symbol: N
+    class_path: examples.chess.knight
+  Bishop:
+    symbol: B
+    class_path: examples.chess.bishop
+  Queen:
+    symbol: Q
+    class_path: examples.chess.queen
+  King:
+    symbol: K
+    class_path: examples.chess.king
+
+width: 32
+height: 32
+
+fen: rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp/rnbqkbnrrnbqkbnrrnbqkbnrrnbqkbnr/pppppppppppppppppppppppppppppppp

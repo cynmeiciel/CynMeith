@@ -1,5 +1,5 @@
 from cynmeith import Board, Config, Piece
-from cynmeith.utils import Coord, Side, S_FIRST
+from cynmeith.utils import Coord, Side2, S_FIRST
 
 class Game:
     """
@@ -10,7 +10,7 @@ class Game:
         self.config = Config(config_path)
         
         self.board = Board(self.config)    
-        self.turn: Side = S_FIRST
+        self.turn: Side2 = S_FIRST
         self.state = None
             
     def get_valid_moves(self, position: Coord) -> list[Coord]:

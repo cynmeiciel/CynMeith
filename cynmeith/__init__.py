@@ -8,6 +8,7 @@ from .core.piece import Piece
 from .core.move_history import MoveHistory
 from .core.move_validator import MoveValidator
 from .core.piece_factory import PieceFactory
+from . import utils
 
 __author__ = "Tran Van Duy"
 __all__ = ["Board", "Config", "Piece", "MoveHistory", "MoveValidator", "PieceFactory"]

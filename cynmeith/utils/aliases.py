@@ -7,9 +7,11 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TypeAlias
 
-Side: TypeAlias = bool
+Side2: TypeAlias = bool
 S_FIRST = True
 S_SECOND = False
+
+SideN: TypeAlias = int
 
 PieceSymbol: TypeAlias = str
 PieceClass: TypeAlias = type
@@ -33,6 +35,9 @@ class Coord:
     def __sub__(self, other: Coord) -> Coord:
         return Coord(self.r - other.r, self.c - other.c)
     
+    def __repr__(self):
+        return f"{self.r}:{self.c}"
+        
     def __str__(self):
         return f"({self.r}, {self.c})"
     
@@ -69,9 +74,9 @@ class Coord:
         """
         return self.is_horizontal(other) or self.is_vertical(other)
     
-    def is_queen_move(self, other: Coord) -> bool:
+    def is_omnistraight(self, other: Coord) -> bool:
         """
-        Check if the position is reachable in a straight line or a diagonal line.
+        Check if the position is reachable in an orthogonal line or a diagonal line.
         """
         return self.is_orthogonal(other) or self.is_diagonal(other)
     
@@ -81,13 +86,13 @@ class Coord:
         """
         return abs(self.r - other.r) <= 1 and abs(self.c - other.c) <= 1
     
-    def is_forward(self, other: Coord, side: Side) -> bool:
+    def is_forward(self, other: Coord, side: Side2) -> bool:
         """
         Check if the position is forward to another position, according to the side.
         """
         return (side and self.r < other.r) or (not side and self.r > other.r)
     
-    def is_backward(self, other: Coord, side: Side) -> bool:
+    def is_backward(self, other: Coord, side: Side2) -> bool:
         """
         Check if the position is backward to another position.
         """
@@ -115,11 +120,37 @@ class Coord:
     
     def direction_unit(self, other: Coord) -> Coord:
         """
-        Get the unit direction vector to another position.
+        Calculates the unit direction vector from this coordinate to another coordinate.
+
+        The unit direction vector represents the movement direction in a straight line,
+        normalized to either (-1, 0, 1) for both row (`r`) and column (`c`).
+
+        Args:
+            other (Coord): The target coordinate.
+
+        Returns:
+            Coord: A unit vector (dr, dc) where:
+                - dr = -1 (up), 0 (same row), or 1 (down)
+                - dc = -1 (left), 0 (same column), or 1 (right)
+        
+        Example:
+            >>> start = Coord(2, 3)
+            >>> end = Coord(5, 6)
+            >>> start.direction_unit(end)
+            Coord(1, 1)  # Moving diagonally down-right
+
+            >>> start = Coord(4, 4)
+            >>> end = Coord(4, 7)
+            >>> start.direction_unit(end)
+            Coord(0, 1)  # Moving right
+
+        Notes:
+            - If `self` and `other` are the same, returns (0, 0).
+            - If moving strictly in a row or column, one of dr or dc will be 0.
         """
-        dx = other.r - self.r
-        dy = other.c - self.c
-        return Coord(dx // abs(dx) if dx else 0, dy // abs(dy) if dy else 0)    
+        dr = other.r - self.r
+        dc = other.c - self.c
+        return Coord(dr // abs(dr) if dr else 0, dc // abs(dc) if dc else 0)    
 
 MoveType: TypeAlias = str
 
@@ -153,7 +184,7 @@ FENStr: TypeAlias = str
 ### ERRORS
 class InvalidMoveError(ValueError):
     """
-    Raised when an invalid move is attempted.
+Raised when an invalid move is attempted.
     """
 
 class PositionError(ValueError):
@@ -175,3 +206,4 @@ class FENError(ValueError):
     """
     Raised when an invalid FEN string is attempted.
     """
+
