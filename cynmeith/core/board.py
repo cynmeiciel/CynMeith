@@ -1,3 +1,4 @@
+from typing import Callable
 from .piece_factory import PieceFactory
 from .config import Config
 from .move_manager import MoveManager
@@ -12,7 +13,7 @@ class Board:
     
     It provides methods for placing, removing, and moving pieces.
     """
-    def __init__(self, config: Config, move_validator: type[MoveManager] = MoveManager, move_history: type[MoveHistory] = MoveHistory):
+    def __init__(self, config: Config, move_manager: type[MoveManager] = MoveManager, move_history: type[MoveHistory] = MoveHistory):
         self.config = config
         self.width = config.width
         self.height = config.height
@@ -21,7 +22,7 @@ class Board:
         self.factory = PieceFactory()
         self.factory.register_pieces(config)
         
-        self.validator = move_validator(self)
+        self.validator = move_manager(self)
         self.history = move_history(self)
         
         self._init_pieces()
@@ -53,7 +54,23 @@ class Board:
             for piece in row:
                 if piece is not None or none_piece:
                     yield piece
-                    
+                                
+    def iter_pieces_by_side(self, side: Side2):
+        """
+        Iterate over all pieces by side.
+        """
+        for piece in self.iter_pieces():
+            if piece.side == side:
+                yield piece
+    
+    def iter_pieces_by_type(self, piece_symbol: PieceSymbol):
+        """
+        Iterate over all pieces by type.
+        """
+        for piece in self.iter_pieces():
+            if piece.symbol == piece_symbol:
+                yield piece
+    
     def iter_positions(self):
         """
         Iterate over all coordinates on the board.
@@ -61,7 +78,7 @@ class Board:
         for r in range(self.height):
             for c in range(self.width):
                 yield Coord(r, c)
-    
+        
     def iter_enumerate(self, none_piece: bool = False):
         """
         Iterate over all pieces on the board with their positions.
@@ -75,7 +92,7 @@ class Board:
         """
         Iterate over all positions in a line between two positions.
         """
-        if not (start.is_orthogonal(end) or start.is_diagonal(end)):
+        if not (start.is_omnidirectional(end)):
             raise ValueError("Positions are not orthogonal or diagonal")
         direction = start.direction_unit(end)
         position = start + direction
@@ -153,18 +170,7 @@ class Board:
         Clear the board.
         """
         self.board = [[None for _ in range(self.width)] for _ in range(self.height)]
-        
-    def get_pieces_by_side(self, side: Side2) -> list[Piece]:
-        """
-        Get all pieces of a given side.
-        """
-        return [piece for piece in self.iter_pieces() if piece.get_side() == side]
-    
-    def get_pieces_by_type(self, piece_symbol: PieceSymbol) -> list[Piece]:
-        """
-        Get all pieces of a given type.
-        """
-        return [piece for piece in self.iter_pieces() if piece.symbol == piece_symbol]
+        self.history.clear()       
     
     def at(self, position: Coord) -> Piece:
         """
@@ -189,12 +195,12 @@ class Board:
         piece = self.at(position)
         return type(piece) if piece is not None else None
     
-    def side_at(self, position: Coord) -> Side2:
+    def side_at(self, position: Coord) -> Side2 | None:
         """
-        Get the side of the piece at a given position.
+        Get the side of the piece at a given position, returns None if the position is empty.
         """
         piece = self.at(position)
-        return piece.get_side() if piece is not None else None    
+        return piece.side if piece is not None else None    
         
     def move(self, start: Coord, end: Coord):
         """
@@ -231,27 +237,50 @@ class Board:
         """
         return self.at(position) is None
     
-    def is_empty_line(self, start: Coord, end: Coord) -> list[Coord]:
+    def is_empty_line(self, start: Coord, end: Coord, criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional) -> bool:
         """
-        Check if the line (including diagonals) between two positions is empty.
-        This will return False if the start and end positions are not orthogonal or diagonal.
+        Checks if the line between two coordinates is empty, following a specific movement rule.
+
+        This method verifies whether all squares along the path from `start` to `end`
+        are unoccupied, based on a criteria that must be a `Coord`'s method.
+
+        Args:
+            start: The starting coordinate.
+            end: The target coordinate.
+            criteria: A Coord method that determines the movement rule to follow, must be is_orthogonal, is_diagonal or is_omnidirectional.
+
+        Returns:
+            bool: True if the path between `start` and `end` is completely empty; False otherwise.
+
+        Example:
+            >>> board.is_empty_line(Coord(0, 0), Coord(0, 7))  # Check if the column is empty
+            True
+
+            >>> board.is_empty_line(Coord(2, 2), Coord(5, 5), Coord.is_diagonal)  # Check diagonal path
+            False
+
+        Notes:
+            - The empty line check is exclusive, meaning that the start and end positions are not included in the check.
         """
-        if not (start.is_orthogonal(end) or start.is_diagonal(end)):
+        if not (criteria(start, end)):
             return False
-        direction = start.direction_unit(end)
-        position = start + direction
-        while position != end:
-            if not self.is_empty(position):
+        for piece in self.iter_pieces_lines(start, end):
+            if piece is not None:
                 return False
-            position += direction
         return True
     
     def is_enemy(self, position: Coord, side: Side2) -> bool:
         """
         Check if a position contains an enemy piece.
         """
-        piece = self.at(position)
-        return piece is not None and piece.get_side() != side
+        enemy_side = self.side_at(position)
+        if enemy_side is None:
+            return False
+        return enemy_side != side
     
-    
+    def is_allied(self, position: Coord, side: Side2) -> bool:
+        """
+        Check if a position contains an allied piece.
+        """
+        return self.side_at(position) == side
     

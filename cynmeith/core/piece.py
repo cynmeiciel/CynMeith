@@ -15,10 +15,10 @@ class Piece(ABC):
         self.position: Coord = position
      
     def __str__(self) -> str:
-        return f"{self.get_side_str()} {self.__class__.__name__}"
+        return f"{self.side} {self.__class__.__name__}"
     
     def __repr__(self) -> str:
-        return f"{self.get_side_str()} {self.__class__.__name__}@{self.position}"
+        return f"{self.side} {self.__class__.__name__}@{self.position}"
     
     def get_symbol_with_side(self) -> str:
         if self.side:
@@ -44,10 +44,11 @@ class Piece(ABC):
         """
         Get the valid moves for the piece.
        
-        This should be overridden to improve performance since it iterates over the entire board, and some pieces might not need `is_valid_move`.
+        Although this default implementation works, this should be overridden to improve performance since it iterates over the entire board, and some pieces might not need `is_valid_move`.
+        However, you should implement `is_valid_move` and use this method first to ensure your piece is working correctly.
         """
         valid_moves = []
-        for coord in board.iter_positions():
-            if self.is_valid_move(coord, board):
-                valid_moves.append(coord)
+        for position in board.iter_positions():
+            if self.is_valid_move(position, board):
+                valid_moves.append(position)
         return valid_moves    

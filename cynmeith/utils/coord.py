@@ -90,7 +90,7 @@ class Coord:
         """
         return self.is_horizontal(other) or self.is_vertical(other)
     
-    def is_omnistraight(self, other: Coord) -> bool:
+    def is_omnidirectional(self, other: Coord) -> bool:
         """
         Check if the position is reachable in an orthogonal line or a diagonal line.
         """

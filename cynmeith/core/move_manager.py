@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from ..utils import Coord, Move
 from .piece import Piece
+from ..utils import Coord, Move
 
 if TYPE_CHECKING:
     from .board import Board
@@ -24,8 +24,6 @@ class MoveManager:
         piece = self.board.at(move.start)
         new_position = move.end
         if not piece.is_valid_move(new_position, self.board):
-            return False
-        if not self.board.is_empty(new_position):
             return False
         
         return True

@@ -4,9 +4,14 @@ def fen_parser(fen: FENStr, width: int, height: int, enclosures: list[str]=["'",
     """
     Parse a FEN string and return a 2D list representing the board.
     Use enclosures to represent pieces with multiple characters.
+    
+    Notes:
+        - FENStr can start with a "!" to indicate an empty board.
     """
     if not isinstance(fen, FENStr):
         raise FENError(f"Invalid FEN: {fen}")
+    if fen.startswith("!"):
+        return [[" " for _ in range(width)] for _ in range(height)]
     
     rows = fen.split(delimiter)
     if len(rows) != height:
@@ -39,7 +44,7 @@ def fen_parser(fen: FENStr, width: int, height: int, enclosures: list[str]=["'",
     return board
 
 
-def fen_deparser(board: list[list[PieceSymbol]], enclosure: str = '"') -> FENStr:
+def fen_deparser(board: list[list[PieceSymbol]], enclosure: str = '"', delimiter: str = "/") -> FENStr:
     """
     Deparse a 2D list representing the board and return a FEN string.
     No error handling.
@@ -61,7 +66,7 @@ def fen_deparser(board: list[list[PieceSymbol]], enclosure: str = '"') -> FENStr
         if count:
             fen_row += str(count)
         rows.append(fen_row)
-    return "/".join(rows)
+    return delimiter.join(rows)
 
 
 if __name__ == "__main__":
