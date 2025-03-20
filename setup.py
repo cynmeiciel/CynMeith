@@ -4,6 +4,8 @@ setup(
     name="cynmeith",
     version="0.1",
     packages=find_packages(),
-    install_requires=[],
+    install_requires=[
+        "PyYAML",
+    ],
     python_requires=">=3.7",
 )

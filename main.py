@@ -1,7 +1,5 @@
-from cynmeith import Board, Config
-from cynmeith.utils import Coord, MoveType
+from examples.chess.chess_ui import ChessUI
 
-
-board = Board(Config("examples/chess/chess.yaml"))
-for c in board.iter_positions():
-    print(c, board.at(c))
+if __name__ == "__main__":
+    game = ChessUI("examples/chess/chess.yaml")
+    game.mainloop()
