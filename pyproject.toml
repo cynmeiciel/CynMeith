@@ -1,0 +1,17 @@
+[project]
+name = "cynmeith"
+version = "0.1.0"
+description = "CynMeith - A flexible and extensible framework for simulating and playing board games."
+authors = [
+    {name = "cynmeiciel",email = "eplmr123duy@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pyyaml (>=6.0.2,<7.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

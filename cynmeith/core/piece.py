@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from warnings import warn
 
 from cynmeith.core.config import Config
 from cynmeith.utils import Coord, Side2
@@ -45,8 +46,9 @@ class Piece(ABC):
         Get the valid moves for the piece.
        
         Although this default implementation works, this should be overridden to improve performance since it iterates over the entire board, and some pieces might not need `is_valid_move`.
-        However, you should implement `is_valid_move` and use this method first to ensure your piece is working correctly.
+        However, you must implement `is_valid_move` and use this method first to ensure your piece is working correctly.
         """
+        warn(f"This is the default implementation of get_valid_moves at {self.__class__.__name__}.\n Overriding this method is recommended.")
         valid_moves = []
         for position in board.iter_positions():
             if self.is_valid_move(position, board):

@@ -22,7 +22,7 @@ class Board:
         self.factory = PieceFactory()
         self.factory.register_pieces(config)
         
-        self.validator = move_manager(self)
+        self.manager = move_manager(self)
         self.history = move_history(self)
         
         self._init_pieces()
@@ -36,13 +36,30 @@ class Board:
                     self.set_at(position, self.factory.create_piece(piece, position))
     
     def __str__(self):
-        return "\n".join(" ".join(piece.get_symbol(self.config) if piece else "_" for piece in row) for row in self.board)
+        return "\n".join(" ".join(piece.symbol if piece else "□" for piece in row) for row in self.board)
   
     def __repr__(self):
-        return "\n".join(" ".join(repr(piece) if piece else "_" for piece in row) for row in self.board)
+        return "\n".join(" ".join(repr(piece) if piece else "□" for piece in row) for row in self.board)
     
     def __iter__(self):
         return iter(self.board)
+    
+    def print_highlighted(self, highlights: list[Coord] = []):
+        """
+        Print the board with highlighted positions.
+        """
+        for r, row in enumerate(self.board):
+            for c, piece in enumerate(row):
+                if piece is None:
+                    symbol = "□"
+                else:
+                    symbol = piece.symbol if piece.side else piece.symbol.lower()
+                position = Coord(r, c)
+                if position in highlights:
+                    print(f"\033[93m{symbol}\033[0m", end=" ")
+                else:
+                    print(symbol, end=" ")
+            print()
     
     def iter_pieces(self, none_piece: bool = False):
         """
@@ -88,38 +105,38 @@ class Board:
                 if piece is not None or none_piece:
                     yield Coord(r, c), piece
     
-    def iter_positions_lines(self, start: Coord, end: Coord):
+    def iter_positions_line(self, start: Coord, end: Coord, criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional):
         """
         Iterate over all positions in a line between two positions.
         """
-        if not (start.is_omnidirectional(end)):
-            raise ValueError("Positions are not orthogonal or diagonal")
+        if not criteria(start, end):
+            return []
         direction = start.direction_unit(end)
         position = start + direction
         while position != end:
             yield position
             position += direction
     
-    def iter_pieces_lines(self, start: Coord, end: Coord, none_piece: bool = False):
+    def iter_pieces_line(self, start: Coord, end: Coord, criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional, none_piece: bool = False):
         """
         Iterate over all pieces in a line between two positions.
         
         If none_piece is True, the iteration will also include empty positions.
         """
-        for position in self.iter_positions_lines(start, end):
+        for position in self.iter_positions_line(start, end, criteria):
             piece = self.at(position)
             if piece is not None or none_piece:
                 yield piece
                 if piece is not None:
                     break
                 
-    def iter_enumerate_lines(self, start: Coord, end: Coord, none_piece: bool = False):
+    def iter_enumerate_line(self, start: Coord, end: Coord, criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional, none_piece: bool = False):
         """
         Iterate over all pieces with their positions in a line between two positions.
         
         If none_piece is True, the iteration will also include empty positions.
         """
-        for position in self.iter_positions_lines(start, end):
+        for position in self.iter_positions_line(start, end, criteria):
             piece = self.at(position)
             if piece is not None or none_piece:
                 yield position, piece
@@ -216,14 +233,15 @@ class Board:
         piece.move(end)
         self.history.record_move(Move(start, end))
     
-    def get_valid_moves(self, position: Coord) -> list[Coord]:
+    def get_valid_moves(self, piece: Piece | Coord) -> list[Coord]:
         """
         Get the valid moves for a piece at a given position.
         """
-        piece = self.at(position)
-        if piece is None:
-            return []
-        return self.validator.get_validated_moves(piece)
+        if isinstance(piece, Coord):
+            piece = self.at(piece)
+            if piece is None:
+                return []
+        return self.manager.get_validated_moves(piece)
     
     def is_in_bounds(self, position: Coord) -> bool:
         """
@@ -264,7 +282,7 @@ class Board:
         """
         if not (criteria(start, end)):
             return False
-        for piece in self.iter_pieces_lines(start, end):
+        for piece in self.iter_pieces_line(start, end):
             if piece is not None:
                 return False
         return True

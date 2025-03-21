@@ -30,7 +30,7 @@ class Move:
     start: Coord = Coord.null()
     end: Coord = Coord.null()
     move_type: MoveType = ""
-    piece: PieceSymbol | None = None
+    extra_info = None # For extra information, such as promotion piece, etc.
     
     @classmethod
     def null(cls) -> Move:

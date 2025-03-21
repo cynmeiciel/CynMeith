@@ -2,9 +2,12 @@ from cynmeith import Piece, Board
 from cynmeith.utils import Coord
 
 class Pawn(Piece):
-    def __init__(self, color: str, position: Coord):
-        super().__init__(color, position)
-        self.distance = 2
+    def __init__(self, side, position: Coord):
+        super().__init__(side, position)
+        if side:
+            self.distance = 2 if position.r == 1 else 1
+        else:
+            self.distance = 2 if position.r == 6 else 1
     
     def is_valid_move(self, new_position: Coord, board: Board) -> bool:
         if not self.position.is_forward(new_position, self.side):

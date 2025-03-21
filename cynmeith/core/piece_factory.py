@@ -28,6 +28,8 @@ class PieceFactory:
         """
         Register all pieces with the factory.
         """
+        if not config.pieces:
+            return
         for piece_name in config.pieces:
             path = config.get_piece_path(piece_name)
             module = import_module(path)

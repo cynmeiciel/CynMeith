@@ -6,7 +6,7 @@ def fen_parser(fen: FENStr, width: int, height: int, enclosures: list[str]=["'",
     Use enclosures to represent pieces with multiple characters.
     
     Notes:
-        - FENStr can start with a "!" to indicate an empty board.
+        - The FEN can start with a "!" to indicate an empty board.
     """
     if not isinstance(fen, FENStr):
         raise FENError(f"Invalid FEN: {fen}")

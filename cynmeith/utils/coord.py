@@ -1,5 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
+from math import trunc
 
 from typing import Callable, TYPE_CHECKING
 if TYPE_CHECKING:
@@ -44,12 +45,46 @@ class Coord:
         Get the unit vector pointing right.
         """
         return Coord(0, 1)
+    
+    @staticmethod
+    def from_str(coord_str: str, delimiter: str = ":") -> Coord:
+        """
+        Create a coordinate from a string.
+        """
+        r, c = coord_str.split(delimiter)
+        return Coord(int(r), int(c))
 
-    def __add__(self, other: Coord) -> Coord:
+    @staticmethod
+    def batch(*coords: tuple[int, int]) -> list[Coord]:
+        """
+        Create a list of coordinates from a list of tuples.
+        """
+        return [Coord(*coord) for coord in coords]
+
+    def __add__(self, other: Coord | int) -> Coord:
+        if isinstance(other, int):
+            return Coord(self.r + other, self.c + other)
         return Coord(self.r + other.r, self.c + other.c)
     
-    def __sub__(self, other: Coord) -> Coord:
+    def __sub__(self, other: Coord | int) -> Coord:
+        if isinstance(other, int):
+            return Coord(self.r - other, self.c - other)
         return Coord(self.r - other.r, self.c - other.c)
+    
+    def __mul__(self, other: Coord | int) -> Coord:
+        if isinstance(other, int):
+            return Coord(self.r * other, self.c * other)
+        return Coord(self.r * other.r, self.c * other.c)
+    
+    def __truediv__(self, other: Coord | int) -> Coord:
+        if isinstance(other, int):
+            return Coord(self.r / other, self.c / other)
+        return Coord(self.r / other.r, self.c / other.c)
+    
+    def __floordiv__(self, other: Coord | int) -> Coord:
+        if isinstance(other, int):
+            return Coord(trunc(self.r / other), trunc(self.c / other))
+        return Coord(trunc(self.r / other.r), trunc(self.c / other.c))
     
     def __repr__(self):
         return f"{self.r}:{self.c}"
@@ -137,7 +172,7 @@ class Coord:
         """
         return abs(self.r - other.r) + abs(self.c - other.c)
     
-    def mirror(self, width: int, height: int, direction: str = "h") -> Coord:
+    def mirror(self, width: int, height: int, direction: str = "v") -> Coord:
         """
         Mirror the position across the board.
         
