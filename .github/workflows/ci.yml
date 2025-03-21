@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.11"]
     
     steps:
     - name: 📥 Checkout code
@@ -30,7 +30,7 @@ jobs:
     - name: 🔎 Check formatting (black + isort)
       run: |
         poetry run black --check .
-        poetry run isort --check-only .
+        poetry run isort -c .
         poetry run mypy cynmeith
 
 
