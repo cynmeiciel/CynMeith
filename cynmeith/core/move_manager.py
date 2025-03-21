@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING
 
-from .piece import Piece
-from ..utils import Coord, Move
+from cynmeith.core.piece import Piece
+from cynmeith.utils import Coord, Move
 
 if TYPE_CHECKING:
-    from .board import Board
+    from cynmeith.core.board import Board
     
 
 class MoveManager:

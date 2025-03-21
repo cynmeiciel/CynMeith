@@ -1,11 +1,11 @@
 from typing import Callable
-from .piece_factory import PieceFactory
-from .config import Config
-from .move_manager import MoveManager
-from .move_history import MoveHistory
-from .piece import Piece
-from ..utils import Coord, PieceSymbol, PieceClass, Side2, Move, PieceError, InvalidMoveError, PositionError
-from ..utils import fen_parser
+from cynmeith.core.piece_factory import PieceFactory
+from cynmeith.core.config import Config
+from cynmeith.core.move_manager import MoveManager
+from cynmeith.core.move_history import MoveHistory
+from cynmeith.core.piece import Piece
+from cynmeith.utils import Coord, PieceSymbol, PieceClass, Side2, Move, PieceError, InvalidMoveError, PositionError
+from cynmeith.utils import fen_parser
 
 class Board:
     """

@@ -1,9 +1,9 @@
 from __future__ import annotations
 from dataclasses import dataclass
 
-from typing import TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING
 if TYPE_CHECKING:
-    from .aliases import Side2
+    from cynmeith.utils import Side2
 
 @dataclass(frozen=True)
 class Coord:
@@ -102,17 +102,26 @@ class Coord:
         """
         return abs(self.r - other.r) <= 1 and abs(self.c - other.c) <= 1
     
-    def is_forward(self, other: Coord, side: Side2) -> bool:
+    def is_forward(self, other: Coord, side: Side2, criteria: Callable[[Coord, Coord], bool] | None = None) -> bool:
         """
         Check if the position is forward to another position, according to the side.
+        A criteria function can be provided to further restrict the movement.
         """
-        return (side and self.r < other.r) or (not side and self.r > other.r)
+        if side:
+            return self.r < other.r and (not criteria or criteria(self, other))
+        else:
+            return self.r > other.r and (not criteria or criteria(self, other))
+        
     
-    def is_backward(self, other: Coord, side: Side2) -> bool:
+    def is_backward(self, other: Coord, side: Side2, criteria: Callable[[Coord, Coord], bool] | None = None) -> bool:
         """
-        Check if the position is backward to another position.
+        Check if the position is backward to another position, according to the side.
+        A criteria function can be provided to further restrict the movement.
         """
-        return (side and self.c > other.c) or (not side and self.c < other.c)
+        if side:
+            return self.r > other.r and (not criteria or criteria(self, other))
+        else:
+            return self.r < other.r and (not criteria or criteria(self, other))
     
     ###
     

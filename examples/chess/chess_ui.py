@@ -1,7 +1,7 @@
 import tkinter as tk
 from cynmeith import Board, Config
 from cynmeith.utils import Coord
-from .chess_manager import ChessManager
+from chess_manager import ChessManager
 
 class ChessUI(tk.Tk):
     def __init__(self, config_path: str):

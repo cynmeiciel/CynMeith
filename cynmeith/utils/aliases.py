@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TypeAlias
 
-from .coord import Coord
+from cynmeith.utils.coord import Coord
 
 Side2: TypeAlias = bool
 S_FIRST = True

@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 
-from ..utils import Move, MoveHistoryError
+from cynmeith.utils import Move, MoveHistoryError
 
 if TYPE_CHECKING:
-    from .board import Board
+    from cynmeith.core.board import Board
     
 class MoveHistory:
     """

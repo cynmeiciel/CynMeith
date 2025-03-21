@@ -1,8 +1,8 @@
 from importlib import import_module
 
-from .config import Config
-from .piece import Piece
-from ..utils import Coord, PieceSymbol, PieceError
+from cynmeith.core.config import Config
+from cynmeith.core.piece import Piece
+from cynmeith.utils import Coord, PieceSymbol, PieceError
 
 class PieceFactory:
     """

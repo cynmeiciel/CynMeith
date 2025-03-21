@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 
-from .config import Config
-from ..utils.aliases import Coord, Side2
+from cynmeith.core.config import Config
+from cynmeith.utils import Coord, Side2
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from .board import Board
+    from cynmeith.core.board import Board
 
 class Piece(ABC):
     symbol = ""
