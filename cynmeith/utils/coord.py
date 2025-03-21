@@ -1,51 +1,54 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from math import trunc
+from typing import TYPE_CHECKING, Callable
 
-from typing import Callable, TYPE_CHECKING
 if TYPE_CHECKING:
     from cynmeith.utils import Side2
+
 
 @dataclass(frozen=True)
 class Coord:
     """
     Represents a 2D coordinate.
     """
+
     r: int
     c: int
-    
+
     @staticmethod
     def null() -> Coord:
         return Coord(-1, -1)
-    
+
     @staticmethod
     def up() -> Coord:
         """
         Get the unit vector pointing up.
         """
         return Coord(-1, 0)
-    
+
     @staticmethod
     def down() -> Coord:
         """
         Get the unit vector pointing down.
         """
         return Coord(1, 0)
-    
+
     @staticmethod
     def left() -> Coord:
         """
         Get the unit vector pointing left.
         """
         return Coord(0, -1)
-    
+
     @staticmethod
     def right() -> Coord:
         """
         Get the unit vector pointing right.
         """
         return Coord(0, 1)
-    
+
     @staticmethod
     def from_str(coord_str: str, delimiter: str = ":") -> Coord:
         """
@@ -65,79 +68,81 @@ class Coord:
         if isinstance(other, int):
             return Coord(self.r + other, self.c + other)
         return Coord(self.r + other.r, self.c + other.c)
-    
+
     def __sub__(self, other: Coord | int) -> Coord:
         if isinstance(other, int):
             return Coord(self.r - other, self.c - other)
         return Coord(self.r - other.r, self.c - other.c)
-    
+
     def __mul__(self, other: Coord | int) -> Coord:
         if isinstance(other, int):
             return Coord(self.r * other, self.c * other)
         return Coord(self.r * other.r, self.c * other.c)
-    
-    def __truediv__(self, other: Coord | int) -> Coord:
-        if isinstance(other, int):
-            return Coord(self.r / other, self.c / other)
-        return Coord(self.r / other.r, self.c / other.c)
-    
+
     def __floordiv__(self, other: Coord | int) -> Coord:
         if isinstance(other, int):
             return Coord(trunc(self.r / other), trunc(self.c / other))
         return Coord(trunc(self.r / other.r), trunc(self.c / other.c))
-    
-    def __repr__(self):
+
+    def __repr__(self) -> str:
         return f"{self.r}:{self.c}"
-        
-    def __str__(self):
+
+    def __str__(self) -> str:
         return f"({self.r}, {self.c})"
-    
-    def __bool__(self):
+
+    def __bool__(self) -> bool:
         return self.r != -1 and self.c != -1
-    
+
     def is_lshape(self, other: Coord) -> bool:
         """
         Check if the position is reachable in an L-shape (Knight's movement).
         """
-        return (abs(self.r - other.r) == 2 and abs(self.c - other.c) == 1) or (abs(self.r - other.r) == 1 and abs(self.c - other.c) == 2)
+        return (abs(self.r - other.r) == 2 and abs(self.c - other.c) == 1) or (
+            abs(self.r - other.r) == 1 and abs(self.c - other.c) == 2
+        )
 
     def is_diagonal(self, other: Coord) -> bool:
         """
         Check if the position is reachable in a diagonal line.
         """
         return abs(self.r - other.r) == abs(self.c - other.c)
-    
+
     def is_horizontal(self, other: Coord) -> bool:
         """
         Check if the position is reachable in a horizontal line.
         """
         return self.r == other.r
-    
+
     def is_vertical(self, other: Coord) -> bool:
         """
         Check if the position is reachable in a vertical line.
         """
         return self.c == other.c
-    
+
     def is_orthogonal(self, other: Coord) -> bool:
         """
         Check if the position is reachable in an orthogonal line.
         """
         return self.is_horizontal(other) or self.is_vertical(other)
-    
+
     def is_omnidirectional(self, other: Coord) -> bool:
         """
         Check if the position is reachable in an orthogonal line or a diagonal line.
         """
         return self.is_orthogonal(other) or self.is_diagonal(other)
-    
+
     def is_adjacent(self, other: Coord) -> bool:
         """
         Check if the position is adjacent to another position.
         """
         return abs(self.r - other.r) <= 1 and abs(self.c - other.c) <= 1
-    
-    def is_forward(self, other: Coord, side: Side2, criteria: Callable[[Coord, Coord], bool] | None = None) -> bool:
+
+    def is_forward(
+        self,
+        other: Coord,
+        side: Side2,
+        criteria: Callable[[Coord, Coord], bool] | None = None,
+    ) -> bool:
         """
         Check if the position is forward to another position, according to the side.
         A criteria function can be provided to further restrict the movement.
@@ -146,9 +151,13 @@ class Coord:
             return self.r < other.r and (not criteria or criteria(self, other))
         else:
             return self.r > other.r and (not criteria or criteria(self, other))
-        
-    
-    def is_backward(self, other: Coord, side: Side2, criteria: Callable[[Coord, Coord], bool] | None = None) -> bool:
+
+    def is_backward(
+        self,
+        other: Coord,
+        side: Side2,
+        criteria: Callable[[Coord, Coord], bool] | None = None,
+    ) -> bool:
         """
         Check if the position is backward to another position, according to the side.
         A criteria function can be provided to further restrict the movement.
@@ -157,34 +166,34 @@ class Coord:
             return self.r > other.r and (not criteria or criteria(self, other))
         else:
             return self.r < other.r and (not criteria or criteria(self, other))
-    
+
     ###
-    
+
     def chebyshev_to(self, other: Coord) -> int:
         """
         Get the Chebyshev distance to another position.
         """
         return max(abs(self.r - other.r), abs(self.c - other.c))
-    
+
     def manhattan_to(self, other: Coord) -> int:
         """
         Get the Manhattan distance to another position.
         """
         return abs(self.r - other.r) + abs(self.c - other.c)
-    
+
     def mirror(self, width: int, height: int, direction: str = "v") -> Coord:
         """
         Mirror the position across the board.
-        
+
         Args:
             width (int): The width of the board.
             height (int): The height of the board.
             direction (str): The direction to mirror. Can be "h" (horizontal), "v" (vertical) or "hv" (both).
-            
+
         Returns:
             Coord: The mirrored position.
         """
-        
+
         if direction == "h":
             return Coord(self.r, width - self.c - 1)
         elif direction == "v":
@@ -192,8 +201,10 @@ class Coord:
         elif direction == "hv":
             return Coord(height - self.r - 1, width - self.c - 1)
         else:
-            raise ValueError(f"Invalid direction {direction}: must be 'h', 'v', or 'hv'")
-    
+            raise ValueError(
+                f"Invalid direction {direction}: must be 'h', 'v', or 'hv'"
+            )
+
     def direction_unit(self, other: Coord) -> Coord:
         """
         Calculates the unit direction vector from this coordinate to another coordinate.
@@ -208,7 +219,7 @@ class Coord:
             Coord: A unit vector (dr, dc) where:
                 - dr = -1 (up), 0 (same row), or 1 (down)
                 - dc = -1 (left), 0 (same column), or 1 (right)
-        
+
         Example:
             >>> start = Coord(2, 3)
             >>> end = Coord(5, 6)
@@ -226,4 +237,4 @@ class Coord:
         """
         dr = other.r - self.r
         dc = other.c - self.c
-        return Coord(dr // abs(dr) if dr else 0, dc // abs(dc) if dc else 0)   
+        return Coord(dr // abs(dr) if dr else 0, dc // abs(dc) if dc else 0)

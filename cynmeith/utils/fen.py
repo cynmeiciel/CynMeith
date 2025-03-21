@@ -1,10 +1,17 @@
-from cynmeith.utils.aliases import FENStr, FENError, PieceSymbol
+from cynmeith.utils.aliases import FENError, FENStr, PieceSymbol
 
-def fen_parser(fen: FENStr, width: int, height: int, enclosures: list[str]=["'",'"'], delimiter: str="/") -> list[list[PieceSymbol]]:
+
+def fen_parser(
+    fen: FENStr,
+    width: int,
+    height: int,
+    enclosures: list[str] = ["'", '"'],
+    delimiter: str = "/",
+) -> list[list[PieceSymbol]]:
     """
     Parse a FEN string and return a 2D list representing the board.
     Use enclosures to represent pieces with multiple characters.
-    
+
     Notes:
         - The FEN can start with a "!" to indicate an empty board.
     """
@@ -12,11 +19,11 @@ def fen_parser(fen: FENStr, width: int, height: int, enclosures: list[str]=["'",
         raise FENError(f"Invalid FEN: {fen}")
     if fen.startswith("!"):
         return [[" " for _ in range(width)] for _ in range(height)]
-    
+
     rows = fen.split(delimiter)
     if len(rows) != height:
         raise FENError(f"Invalid FEN: Expected {height} rows, but got {len(rows)}")
-    
+
     board = []
     quote = False
     piece = ""
@@ -37,14 +44,18 @@ def fen_parser(fen: FENStr, width: int, height: int, enclosures: list[str]=["'",
                 board_row.append(char)
         if quote:
             raise FENError(f"Invalid FEN: Unmatched quote in row {row}")
-        
+
         if len(board_row) != width:
-            raise FENError(f"Invalid FEN: Expected {width} columns, but got {len(board_row)} at row {irow}")
+            raise FENError(
+                f"Invalid FEN: Expected {width} columns, but got {len(board_row)} at row {irow}"
+            )
         board.append(board_row)
     return board
 
 
-def fen_deparser(board: list[list[PieceSymbol]], enclosure: str = '"', delimiter: str = "/") -> FENStr:
+def fen_deparser(
+    board: list[list[PieceSymbol]], enclosure: str = '"', delimiter: str = "/"
+) -> FENStr:
     """
     Deparse a 2D list representing the board and return a FEN string.
     No error handling.
@@ -74,7 +85,5 @@ if __name__ == "__main__":
     board = fen_parser(fen, 8, 8)
     for row in board:
         print(row)
-        
+
     print(fen_deparser(board))
-        
-        

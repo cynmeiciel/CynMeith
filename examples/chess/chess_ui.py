@@ -1,7 +1,10 @@
 import tkinter as tk
+
+from chess_manager import ChessManager
+
 from cynmeith import Board, Config
 from cynmeith.utils import Coord
-from chess_manager import ChessManager
+
 
 class ChessUI(tk.Tk):
     def __init__(self, config_path: str):
@@ -13,7 +16,11 @@ class ChessUI(tk.Tk):
         self.valid_moves = []
 
         self.cell_size = 60
-        self.canvas = tk.Canvas(self, width=self.board.width * self.cell_size, height=self.board.height * self.cell_size)
+        self.canvas = tk.Canvas(
+            self,
+            width=self.board.width * self.cell_size,
+            height=self.board.height * self.cell_size,
+        )
         self.canvas.pack()
         self.canvas.bind("<Button-1>", self.on_click)
 
@@ -28,18 +35,23 @@ class ChessUI(tk.Tk):
             for y in range(self.board.height):
                 color = "#EEE" if (x + y) % 2 == 0 else "#888"
                 self.canvas.create_rectangle(
-                    x * self.cell_size, y * self.cell_size,
-                    (x + 1) * self.cell_size, (y + 1) * self.cell_size,
-                    fill=color, outline="black"
+                    x * self.cell_size,
+                    y * self.cell_size,
+                    (x + 1) * self.cell_size,
+                    (y + 1) * self.cell_size,
+                    fill=color,
+                    outline="black",
                 )
 
         # Highlight valid moves
         for move in self.valid_moves:
             y, x = move.r, move.c
             self.canvas.create_oval(
-                x * self.cell_size + 20, y * self.cell_size + 20,
-                (x + 1) * self.cell_size - 20, (y + 1) * self.cell_size - 20,
-                fill="yellow"
+                x * self.cell_size + 20,
+                y * self.cell_size + 20,
+                (x + 1) * self.cell_size - 20,
+                (y + 1) * self.cell_size - 20,
+                fill="yellow",
             )
 
         # Draw pieces
@@ -51,7 +63,7 @@ class ChessUI(tk.Tk):
                         x * self.cell_size + self.cell_size // 2,
                         y * self.cell_size + self.cell_size // 2,
                         text=piece.get_symbol_with_side(),
-                        font=("Arial", 24, "bold")
+                        font=("Arial", 24, "bold"),
                     )
 
     def on_click(self, event):
@@ -77,5 +89,7 @@ class ChessUI(tk.Tk):
             else:
                 self.valid_moves = []
 
-        print(f"Selected piece: {self.selected_piece.position if self.selected_piece else None}")
+        print(
+            f"Selected piece: {self.selected_piece.position if self.selected_piece else None}"
+        )
         self.draw_board()

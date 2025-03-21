@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🐍 Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: 📦 Install dependencies
+      run: |
+        pip install poetry
+        poetry install
+
+    - name: 🔎 Check formatting (black + isort)
+      run: |
+        poetry run black --check .
+        poetry run isort --check-only .
+        poetry run mypy cynmeith
+
+
+    - name: ✅ Run tests
+      run: poetry run pytest -v --tb=short

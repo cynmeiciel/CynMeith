@@ -4,23 +4,25 @@ from cynmeith.utils import Move, MoveHistoryError
 
 if TYPE_CHECKING:
     from cynmeith.core.board import Board
-    
+
+
 class MoveHistory:
     """
     Manages the history of moves, allowing undo/redo functionality.
-    
-    Stores both a move stack (for tracking move history) and a state stack 
+
+    Stores both a move stack (for tracking move history) and a state stack
     (for storing previous board states before each move).
     """
+
     def __init__(self, board: "Board"):
-        self.num_moves = 0 # Number of moves made (half-moves)
+        self.num_moves = 0  # Number of moves made (half-moves)
         self.board = board
         self.move_stack: list[Move] = []  # List of moves
-        self.state_stack: list[Board] = [] # List of board states
+        self.state_stack: list[Board] = []  # List of board states
         self.redo_stack: list[Move] = []
         self.redo_state_stack: list[Board] = []
 
-    def clear(self):
+    def clear(self) -> None:
         """
         Clears the move history.
         """
@@ -29,8 +31,8 @@ class MoveHistory:
         self.redo_stack.clear()
         self.redo_state_stack.clear()
         self.num_moves = 0
-    
-    def record_move(self, move: Move):
+
+    def record_move(self, move: Move) -> None:
         """
         Records a move along with the current board state before execution.
         """
@@ -40,7 +42,7 @@ class MoveHistory:
         self.redo_state_stack.clear()
         self.num_moves += 1
 
-    def undo_move(self):
+    def undo_move(self) -> None:
         """
         Reverts the last move, restoring the previous board state.
         """
@@ -53,8 +55,8 @@ class MoveHistory:
         self.redo_stack.append(self.move_stack.pop())
         self.redo_state_stack.append(last_state)
         self.num_moves -= 1
-        
-    def redo_move(self):
+
+    def redo_move(self) -> None:
         """
         Redoes the last undone move.
         """

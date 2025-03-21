@@ -1,5 +1,6 @@
-from cynmeith import Piece, Board
+from cynmeith import Board, Piece
 from cynmeith.utils import Coord
+
 
 class Knight(Piece):
     def is_valid_move(self, new_position: Coord, board: Board) -> bool:

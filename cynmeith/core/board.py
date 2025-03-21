@@ -1,50 +1,72 @@
-from typing import Callable
-from cynmeith.core.piece_factory import PieceFactory
+from typing import Callable, Generator
+
 from cynmeith.core.config import Config
-from cynmeith.core.move_manager import MoveManager
 from cynmeith.core.move_history import MoveHistory
+from cynmeith.core.move_manager import MoveManager
 from cynmeith.core.piece import Piece
-from cynmeith.utils import Coord, PieceSymbol, PieceClass, Side2, Move, PieceError, InvalidMoveError, PositionError
-from cynmeith.utils import fen_parser
+from cynmeith.core.piece_factory import PieceFactory
+from cynmeith.utils.aliases import (
+    InvalidMoveError,
+    Move,
+    PieceClass,
+    PieceError,
+    PieceSymbol,
+    PositionError,
+    Side2,
+)
+from cynmeith.utils.coord import Coord
+from cynmeith.utils.fen import fen_parser
+
 
 class Board:
     """
     The Board class represents the game board and acts as the central interface for managing game state.
-    
+
     It provides methods for placing, removing, and moving pieces.
     """
-    def __init__(self, config: Config, move_manager: type[MoveManager] = MoveManager, move_history: type[MoveHistory] = MoveHistory):
+
+    def __init__(
+        self,
+        config: Config,
+        move_manager: type[MoveManager] = MoveManager,
+        move_history: type[MoveHistory] = MoveHistory,
+    ) -> None:
         self.config = config
         self.width = config.width
         self.height = config.height
-        self.board = [[None for _ in range(self.width)] for _ in range(self.height)]
-        
+        self.board: list[list[Piece | None]] = [
+            [None for _ in range(self.width)] for _ in range(self.height)
+        ]
+
         self.factory = PieceFactory()
         self.factory.register_pieces(config)
-        
+
         self.manager = move_manager(self)
         self.history = move_history(self)
-        
+
         self._init_pieces()
-        
-    def _init_pieces(self):
+
+    def _init_pieces(self) -> None:
         grid = fen_parser(self.config.fen, self.config.width, self.config.height)
         for r, row in enumerate(grid):
             for c, piece in enumerate(row):
                 if piece != " ":
                     position = Coord(r, c)
                     self.set_at(position, self.factory.create_piece(piece, position))
-    
-    def __str__(self):
-        return "\n".join(" ".join(piece.symbol if piece else "□" for piece in row) for row in self.board)
-  
-    def __repr__(self):
-        return "\n".join(" ".join(repr(piece) if piece else "□" for piece in row) for row in self.board)
-    
-    def __iter__(self):
-        return iter(self.board)
-    
-    def print_highlighted(self, highlights: list[Coord] = []):
+
+    def __str__(self) -> str:
+        return "\n".join(
+            " ".join(piece.symbol if piece else "□" for piece in row)
+            for row in self.board
+        )
+
+    def __repr__(self) -> str:
+        return "\n".join(
+            " ".join(repr(piece) if piece else "□" for piece in row)
+            for row in self.board
+        )
+
+    def print_highlighted(self, highlights: list[Coord] = []) -> None:
         """
         Print the board with highlighted positions.
         """
@@ -60,43 +82,51 @@ class Board:
                 else:
                     print(symbol, end=" ")
             print()
-    
-    def iter_pieces(self, none_piece: bool = False):
+
+    def iter_pieces(
+        self, none_piece: bool = False
+    ) -> Generator[Piece | None, None, None]:
         """
         Iterate over all pieces on the board.
-        
+
         If none_piece is True, the iteration will also include empty positions.
         """
         for row in self.board:
             for piece in row:
                 if piece is not None or none_piece:
                     yield piece
-                                
-    def iter_pieces_by_side(self, side: Side2):
+
+    def iter_pieces_by_side(self, side: Side2) -> Generator[Piece | None, None, None]:
         """
         Iterate over all pieces by side.
         """
         for piece in self.iter_pieces():
+            assert piece is not None
             if piece.side == side:
                 yield piece
-    
-    def iter_pieces_by_type(self, piece_symbol: PieceSymbol):
+
+    def iter_pieces_by_type(
+        self, piece_symbol: PieceSymbol
+    ) -> Generator[Piece | None, None, None]:
         """
         Iterate over all pieces by type.
         """
         for piece in self.iter_pieces():
+            assert piece is not None
             if piece.symbol == piece_symbol:
                 yield piece
-    
-    def iter_positions(self):
+
+    def iter_positions(self) -> Generator[Coord, None, None]:
         """
         Iterate over all coordinates on the board.
         """
         for r in range(self.height):
             for c in range(self.width):
                 yield Coord(r, c)
-        
-    def iter_enumerate(self, none_piece: bool = False):
+
+    def iter_enumerate(
+        self, none_piece: bool = False
+    ) -> Generator[tuple[Coord, Piece | None], None, None]:
         """
         Iterate over all pieces on the board with their positions.
         """
@@ -104,23 +134,34 @@ class Board:
             for c, piece in enumerate(row):
                 if piece is not None or none_piece:
                     yield Coord(r, c), piece
-    
-    def iter_positions_line(self, start: Coord, end: Coord, criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional):
+
+    def iter_positions_line(
+        self,
+        start: Coord,
+        end: Coord,
+        criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional,
+    ) -> Generator[Coord, None, None]:
         """
         Iterate over all positions in a line between two positions.
         """
         if not criteria(start, end):
-            return []
+            raise StopIteration
         direction = start.direction_unit(end)
         position = start + direction
         while position != end:
             yield position
             position += direction
-    
-    def iter_pieces_line(self, start: Coord, end: Coord, criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional, none_piece: bool = False):
+
+    def iter_pieces_line(
+        self,
+        start: Coord,
+        end: Coord,
+        criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional,
+        none_piece: bool = False,
+    ) -> Generator[Piece | None, None, None]:
         """
         Iterate over all pieces in a line between two positions.
-        
+
         If none_piece is True, the iteration will also include empty positions.
         """
         for position in self.iter_positions_line(start, end, criteria):
@@ -129,11 +170,17 @@ class Board:
                 yield piece
                 if piece is not None:
                     break
-                
-    def iter_enumerate_line(self, start: Coord, end: Coord, criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional, none_piece: bool = False):
+
+    def iter_enumerate_line(
+        self,
+        start: Coord,
+        end: Coord,
+        criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional,
+        none_piece: bool = False,
+    ) -> Generator[tuple[Coord, Piece | None], None, None]:
         """
         Iterate over all pieces with their positions in a line between two positions.
-        
+
         If none_piece is True, the iteration will also include empty positions.
         """
         for position in self.iter_positions_line(start, end, criteria):
@@ -142,8 +189,10 @@ class Board:
                 yield position, piece
                 if piece is not None:
                     break
-            
-    def iter_positions_towards(self, start: Coord, direction: Coord):
+
+    def iter_positions_towards(
+        self, start: Coord, direction: Coord
+    ) -> Generator[Coord, None, None]:
         """
         Iterate over all positions in a direction from a starting position.
         """
@@ -151,8 +200,10 @@ class Board:
         while self.is_in_bounds(position):
             yield position
             position += direction
-    
-    def iter_pieces_towards(self, start: Coord, direction: Coord):
+
+    def iter_pieces_towards(
+        self, start: Coord, direction: Coord
+    ) -> Generator[Piece | None, None, None]:
         """
         Iterate over all pieces in a direction from a starting position.
         """
@@ -161,11 +212,13 @@ class Board:
             if piece is not None:
                 yield piece
                 break
-            
-    def iter_enumerate_towards(self, start: Coord, direction: Coord, none_piece: bool = False):
+
+    def iter_enumerate_towards(
+        self, start: Coord, direction: Coord, none_piece: bool = False
+    ) -> Generator[tuple[Coord, Piece | None], None, None]:
         """
         Iterate over all pieces with their positions in a direction from a starting position.
-        
+
         If none_piece is True, the iteration will also include empty positions.
         """
         for position in self.iter_positions_towards(start, direction):
@@ -174,52 +227,52 @@ class Board:
                 yield position, piece
                 if piece is not None:
                     break
-                
-    def reset(self):
+
+    def reset(self) -> None:
         """
         Reset the board to its initial state.
         """
         self.clear()
         self._init_pieces()
-    
-    def clear(self):
+
+    def clear(self) -> None:
         """
         Clear the board.
         """
         self.board = [[None for _ in range(self.width)] for _ in range(self.height)]
-        self.history.clear()       
-    
-    def at(self, position: Coord) -> Piece:
+        self.history.clear()
+
+    def at(self, position: Coord) -> Piece | None:
         """
         Get the piece at a given position.
         """
         if not self.is_in_bounds(position):
             raise PositionError(f"Position out of bounds {position}")
         return self.board[position.r][position.c]
-    
-    def set_at(self, position: Coord, piece: Piece):
+
+    def set_at(self, position: Coord, piece: Piece | None) -> None:
         """
-        Set a piece at a given position.s
+        Set a piece at a given position.
         """
         if not self.is_in_bounds(position):
             raise PositionError(f"Position out of bounds {position}")
         self.board[position.r][position.c] = piece
-        
-    def type_at(self, position: Coord) -> PieceClass:
+
+    def type_at(self, position: Coord) -> PieceClass | None:
         """
         Get the type of piece at a given position.
         """
         piece = self.at(position)
         return type(piece) if piece is not None else None
-    
+
     def side_at(self, position: Coord) -> Side2 | None:
         """
         Get the side of the piece at a given position, returns None if the position is empty.
         """
         piece = self.at(position)
-        return piece.side if piece is not None else None    
-        
-    def move(self, start: Coord, end: Coord):
+        return piece.side if piece is not None else None
+
+    def move(self, start: Coord, end: Coord) -> None:
         """
         Perform a move by a player, not a piece.
         """
@@ -232,30 +285,38 @@ class Board:
         self.set_at(end, piece)
         piece.move(end)
         self.history.record_move(Move(start, end))
-    
-    def get_valid_moves(self, piece: Piece | Coord) -> list[Coord]:
+
+    def get_valid_moves(self, piece_: Piece | None) -> list[Coord] | None:
         """
         Get the valid moves for a piece at a given position.
         """
-        if isinstance(piece, Coord):
-            piece = self.at(piece)
-            if piece is None:
-                return []
-        return self.manager.get_validated_moves(piece)
-    
+        if piece_ is None:
+            return None
+        return self.manager.get_validated_moves(piece_)
+
     def is_in_bounds(self, position: Coord) -> bool:
         """
         Check if a position is in bounds.
         """
-        return position.r >= 0 and position.r < self.height and position.c >= 0 and position.c < self.width
-    
+        return (
+            position.r >= 0
+            and position.r < self.height
+            and position.c >= 0
+            and position.c < self.width
+        )
+
     def is_empty(self, position: Coord) -> bool:
         """
         Check if a position is empty.
         """
         return self.at(position) is None
-    
-    def is_empty_line(self, start: Coord, end: Coord, criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional) -> bool:
+
+    def is_empty_line(
+        self,
+        start: Coord,
+        end: Coord,
+        criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional,
+    ) -> bool:
         """
         Checks if the line between two coordinates is empty, following a specific movement rule.
 
@@ -286,7 +347,7 @@ class Board:
             if piece is not None:
                 return False
         return True
-    
+
     def is_enemy(self, position: Coord, side: Side2) -> bool:
         """
         Check if a position contains an enemy piece.
@@ -295,10 +356,9 @@ class Board:
         if enemy_side is None:
             return False
         return enemy_side != side
-    
+
     def is_allied(self, position: Coord, side: Side2) -> bool:
         """
         Check if a position contains an allied piece.
         """
         return self.side_at(position) == side
-    
