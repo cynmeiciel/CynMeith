@@ -1,5 +1,6 @@
 """
-CynMeith - A flexible and extensible framework for simulating and playing board games.
+CynMeith - A flexible and extensible framework for simulating
+and playing board games.
 """
 
 from cynmeith import utils

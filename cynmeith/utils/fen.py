@@ -10,6 +10,7 @@ def fen_parser(
 ) -> list[list[PieceSymbol]]:
     """
     Parse a FEN string and return a 2D list representing the board.
+
     Use enclosures to represent pieces with multiple characters.
 
     Notes:

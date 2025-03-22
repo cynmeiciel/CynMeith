@@ -85,7 +85,7 @@ class ChessUI(tk.Tk):
             piece = self.board.at(position)
             if piece:
                 self.selected_piece = piece
-                self.valid_moves = self.board.get_valid_moves(position)
+                self.valid_moves = self.board.get_valid_moves(piece)
             else:
                 self.valid_moves = []
 

@@ -50,7 +50,7 @@ Ending: TypeAlias = str
 FENStr: TypeAlias = str
 
 
-### ERRORS
+# ERRORS
 class InvalidMoveError(ValueError):
     """
     Raised when an invalid move is attempted.

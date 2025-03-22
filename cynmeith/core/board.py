@@ -20,7 +20,8 @@ from cynmeith.utils.fen import fen_parser
 
 class Board:
     """
-    The Board class represents the game board and acts as the central interface for managing game state.
+    The Board class represents the game board and acts as the central
+    interface for managing game state.
 
     It provides methods for placing, removing, and moving pieces.
     """
@@ -286,13 +287,13 @@ class Board:
         piece.move(end)
         self.history.record_move(Move(start, end))
 
-    def get_valid_moves(self, piece_: Piece | None) -> list[Coord] | None:
+    def get_valid_moves(self, piece: Piece | None) -> list[Coord] | None:
         """
         Get the valid moves for a piece at a given position.
         """
-        if piece_ is None:
+        if piece is None:
             return None
-        return self.manager.get_validated_moves(piece_)
+        return self.manager.get_validated_moves(piece)
 
     def is_in_bounds(self, position: Coord) -> bool:
         """
