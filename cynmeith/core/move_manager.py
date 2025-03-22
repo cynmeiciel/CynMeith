@@ -26,10 +26,7 @@ class MoveManager:
         if piece is None:
             return False
         new_position = move.end
-        if not piece.is_valid_move(new_position, self.board):
-            return False
-
-        return True
+        return piece.is_valid_move(new_position, self.board)
 
     def get_validated_moves(self, piece: Piece) -> list[Coord]:
         """
