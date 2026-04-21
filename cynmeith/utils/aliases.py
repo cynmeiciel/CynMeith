@@ -23,6 +23,7 @@ PieceClass: TypeAlias = type["Piece"]
 PieceName: TypeAlias = str
 
 MoveType: TypeAlias = str  # "MOVE", "DROP", "PROMOTE", etc.
+MoveExtraInfo: TypeAlias = dict[str, object]
 
 
 @dataclass(frozen=True)
@@ -35,7 +36,7 @@ class Move:
     start: Coord = Coord.null()
     end: Coord = Coord.null()
     move_type: MoveType = ""
-    extra_info: Any = None  # For extra information, such as promotion piece, etc.
+    extra_info: MoveExtraInfo | None = None
 
     @classmethod
     def null(cls) -> Move:

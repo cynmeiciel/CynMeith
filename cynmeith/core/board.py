@@ -8,6 +8,8 @@ from cynmeith.core.piece_factory import PieceFactory
 from cynmeith.utils.aliases import (
     InvalidMoveError,
     Move,
+    MoveExtraInfo,
+    MoveType,
     PieceClass,
     PieceError,
     PieceSymbol,
@@ -331,19 +333,32 @@ class Board:
         piece = self.at(position)
         return piece.side if piece is not None else None
 
-    def move(self, start: Coord, end: Coord) -> None:
+    def move(
+        self,
+        start: Coord,
+        end: Coord,
+        move_type: MoveType = "",
+        extra_info: MoveExtraInfo | None = None,
+    ) -> None:
         """
         Perform a move by a player, not a piece.
         """
         piece = self.at(start)
         if piece is None:
             raise PieceError("No piece at starting position")
-        move = Move(start, end)
-        if not self.manager.validate_move(move):
+        move = Move(start, end, move_type, extra_info)
+        resolved_move = self.manager.resolve_move(move)
+        if resolved_move is None:
             raise InvalidMoveError("Invalid move!")
-        self.set_at(start, None)
-        self.set_at(end, piece)
-        piece.move(end)
+        self.manager.apply_move(resolved_move, piece)
+
+    def _apply_move(self, move: Move, piece: Piece) -> None:
+        """
+        Apply a move that has already been validated.
+        """
+        self.set_at(move.start, None)
+        self.set_at(move.end, piece)
+        piece.move(move.end)
         self.history.record_move(move)
 
     def get_valid_moves(self, piece: Piece | None) -> list[Coord] | None:

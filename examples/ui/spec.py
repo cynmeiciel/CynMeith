@@ -1,7 +1,7 @@
+from collections.abc import Callable
 from dataclasses import dataclass
-from pathlib import Path
 
-from cynmeith import MoveManager
+from cynmeith import Game
 
 
 @dataclass(frozen=True)
@@ -19,8 +19,7 @@ class BoardTheme:
 @dataclass(frozen=True)
 class GameSpec:
     title: str
-    config_path: Path
-    move_manager: type[MoveManager]
+    create_game: Callable[[], Game]
     theme: BoardTheme
     show_river: bool = False
     status_hint: str = "Click a piece to select it."

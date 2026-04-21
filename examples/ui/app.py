@@ -1,6 +1,6 @@
 import tkinter as tk
 
-from cynmeith import Board, Config
+from cynmeith import Game
 from cynmeith.core.piece import Piece
 from cynmeith.utils import Coord, InvalidMoveError, MoveHistoryError
 
@@ -15,7 +15,8 @@ class TkGameApp(tk.Tk):
 
         self.spec = spec
         self.title(spec.title)
-        self.board = Board(Config(str(spec.config_path)), spec.move_manager)
+        self.game: Game = spec.create_game()
+        self.board = self.game.board
         self.selected_piece: Piece | None = None
         self.valid_moves = []
 
@@ -50,14 +51,14 @@ class TkGameApp(tk.Tk):
         self.valid_moves = []
 
     def reset_board(self) -> None:
-        self.board.reset()
+        self.game.reset()
         self.clear_selection()
         self.status_bar.set("Board reset.")
         self.refresh()
 
     def undo_move(self) -> None:
         try:
-            self.board.history.undo_move()
+            self.game.undo_move()
         except MoveHistoryError as exc:
             self.status_bar.set(str(exc))
             return
@@ -67,7 +68,7 @@ class TkGameApp(tk.Tk):
 
     def redo_move(self) -> None:
         try:
-            self.board.history.redo_move()
+            self.game.redo_move()
         except MoveHistoryError as exc:
             self.status_bar.set(str(exc))
             return
@@ -83,14 +84,14 @@ class TkGameApp(tk.Tk):
             return
 
         self.selected_piece = piece
-        self.valid_moves = self.board.get_valid_moves(piece) or []
+        self.valid_moves = self.game.get_valid_moves(piece) or []
         self.status_bar.set(f"Selected {piece.__class__.__name__} at {piece.position}.")
 
     def move_selected_piece(self, position: Coord) -> None:
         if self.selected_piece is None:
             return
         try:
-            self.board.move(self.selected_piece.position, position)
+            self.game.move(self.selected_piece.position, position)
         except InvalidMoveError as exc:
             self.status_bar.set(str(exc))
         else:
