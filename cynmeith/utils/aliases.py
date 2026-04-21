@@ -5,7 +5,7 @@ Contains type aliases and dataclasses for the game.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 from cynmeith.utils.coord import Coord
 
@@ -35,7 +35,7 @@ class Move:
     start: Coord = Coord.null()
     end: Coord = Coord.null()
     move_type: MoveType = ""
-    extra_info = None  # For extra information, such as promotion piece, etc.
+    extra_info: Any = None  # For extra information, such as promotion piece, etc.
 
     @classmethod
     def null(cls) -> Move:

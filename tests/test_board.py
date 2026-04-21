@@ -1,5 +1,12 @@
-from cynmeith import Board
+import pytest
+
+from cynmeith import Board, Config, MoveManager
 from cynmeith.utils import Coord, InvalidMoveError, PieceError
+
+
+class RejectAllMoveManager(MoveManager):
+    def validate_move(self, move):
+        return False
 
 
 def test_board_init(board):
@@ -81,6 +88,39 @@ def test_invalid_move(board):
         assert False, "Expected InvalidMoveError"
     except InvalidMoveError:
         pass
+
+
+def test_board_move_uses_move_manager():
+    """
+    Test that Board.move delegates validation to the configured move manager.
+    """
+    board = Board(Config("examples/chess/testchess.yaml"), move_manager=RejectAllMoveManager)
+
+    with pytest.raises(InvalidMoveError):
+        board.move(Coord(1, 0), Coord(2, 0))
+
+    assert board.at(Coord(1, 0)).get_symbol_with_side() == "P"
+    assert board.at(Coord(2, 0)) is None
+
+
+def test_move_history_undo_redo(board):
+    """
+    Test that undo and redo restore board snapshots correctly.
+    """
+    start = Coord(1, 0)
+    end = Coord(2, 0)
+
+    board.move(start, end)
+    assert board.at(start) is None
+    assert board.at(end).get_symbol_with_side() == "P"
+
+    board.history.undo_move()
+    assert board.at(start).get_symbol_with_side() == "P"
+    assert board.at(end) is None
+
+    board.history.redo_move()
+    assert board.at(start) is None
+    assert board.at(end).get_symbol_with_side() == "P"
 
 
 def test_is_empty_line(board):

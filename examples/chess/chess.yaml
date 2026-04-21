@@ -1,22 +1,22 @@
 pieces:
   Pawn:
     symbol: P
-    class_path: pawn
+    class_path: examples.chess.pawn
   Rook:
     symbol: R
-    class_path: rook
+    class_path: examples.chess.rook
   Knight:
     symbol: N
-    class_path: knight
+    class_path: examples.chess.knight
   Bishop:
     symbol: B
-    class_path: bishop
+    class_path: examples.chess.bishop
   Queen:
     symbol: Q
-    class_path: queen
+    class_path: examples.chess.queen
   King:
     symbol: K
-    class_path: king
+    class_path: examples.chess.king
 
 width: 8
 height: 8

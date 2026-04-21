@@ -64,6 +64,31 @@ class Coord:
         """
         return [Coord(*coord) for coord in coords]
 
+    @staticmethod
+    def generate(
+        criteria: Callable[[Coord], bool],
+        board_width: int,
+        board_height: int,
+    ) -> list[Coord]:
+        """
+        Generate a list of coordinates based on a criteria.
+
+        Args:
+            criteria (Callable[[Coord], bool]): A function that determines whether a coordinate satisfies the condition.
+            board_width (int): The width of the board.
+            board_height (int): The height of the board.
+
+        Returns:
+            list[Coord]: A list of coordinates that satisfy the criteria.
+        """
+        valid_coords = []
+        for r in range(board_height):
+            for c in range(board_width):
+                coord = Coord(r, c)
+                if criteria(coord):
+                    valid_coords.append(coord)
+        return valid_coords
+
     def __add__(self, other: Coord | int) -> Coord:
         if isinstance(other, int):
             return Coord(self.r + other, self.c + other)
@@ -78,6 +103,11 @@ class Coord:
         if isinstance(other, int):
             return Coord(self.r * other, self.c * other)
         return Coord(self.r * other.r, self.c * other.c)
+
+    # def __div__(self, other: Coord | int) -> Coord:
+    #     if isinstance(other, int):
+    #         return Coord(self.r / other, self.c / other)
+    #     return Coord(self.r / other.r, self.c / other.c)
 
     def __floordiv__(self, other: Coord | int) -> Coord:
         if isinstance(other, int):

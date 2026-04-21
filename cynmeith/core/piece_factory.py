@@ -45,8 +45,8 @@ class PieceFactory:
         """
         Create a piece. Upper case for white, lower case for black.
         """
-        if piece_symbol == " " or piece_symbol is None:
-            return None
+        if not piece_symbol:
+            raise PieceError("Piece symbol is empty.")
 
         side = piece_symbol.isupper()  # True if piece is white, False if black
         piece_cls = self.piece_classes.get(piece_symbol.upper())

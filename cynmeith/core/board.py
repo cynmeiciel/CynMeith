@@ -46,6 +46,7 @@ class Board:
         self.history = move_history(self)
 
         self._init_pieces()
+        self.history.seed_current_state()
 
     def _init_pieces(self) -> None:
         grid = fen_parser(self.config.fen, self.config.width, self.config.height)
@@ -148,10 +149,9 @@ class Board:
         if not criteria(start, end):
             raise StopIteration
         direction = start.direction_unit(end)
-        position = start + direction
-        while position != end:
-            yield position
-            position += direction
+        while start != end + direction:
+            yield start
+            start += direction
 
     def iter_pieces_line(
         self,
@@ -169,8 +169,6 @@ class Board:
             piece = self.at(position)
             if piece is not None or none_piece:
                 yield piece
-                if piece is not None:
-                    break
 
     def iter_enumerate_line(
         self,
@@ -188,8 +186,6 @@ class Board:
             piece = self.at(position)
             if piece is not None or none_piece:
                 yield position, piece
-                if piece is not None:
-                    break
 
     def iter_positions_towards(
         self, start: Coord, direction: Coord
@@ -197,10 +193,9 @@ class Board:
         """
         Iterate over all positions in a direction from a starting position.
         """
-        position = start + direction
-        while self.is_in_bounds(position):
-            yield position
-            position += direction
+        while self.is_in_bounds(start):
+            yield start
+            start += direction
 
     def iter_pieces_towards(
         self, start: Coord, direction: Coord
@@ -212,7 +207,6 @@ class Board:
             piece = self.at(position)
             if piece is not None:
                 yield piece
-                break
 
     def iter_enumerate_towards(
         self, start: Coord, direction: Coord, none_piece: bool = False
@@ -226,8 +220,77 @@ class Board:
             piece = self.at(position)
             if piece is not None or none_piece:
                 yield position, piece
-                if piece is not None:
-                    break
+
+    def count_pieces_line(
+        self,
+        start: Coord,
+        end: Coord,
+        criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional,
+    ) -> int:
+        """
+        Count the number of pieces along a line or diagonal between two positions.
+
+        Args:
+            start (Coord): The starting position.
+            end (Coord): The ending position.
+            criteria (Callable[[Coord, Coord], bool]): A function to determine the movement rule (e.g., is_diagonal, is_orthogonal).
+
+        Returns:
+            int: The number of pieces along the line or diagonal.
+        """
+        if not criteria(start, end):
+            raise ValueError(f"Invalid line criteria between {start} and {end}")
+
+        return len(list(self.iter_pieces_line(start, end, criteria)))
+
+    def count_pieces_from(self, position: Coord) -> dict[str, int]:
+        """
+        Count the number of pieces from a given position along the row, column, and diagonals.
+
+        Args:
+            position (Coord): The starting position.
+
+        Returns:
+            dict[str, int]: A dictionary with counts for "row", "column", "diagonal1", and "diagonal2".
+        """
+        if not self.is_in_bounds(position):
+            raise PositionError(f"Position out of bounds {position}")
+
+        counts = {"row": 0, "column": 0, "diagonal1": 0, "diagonal2": 0}
+
+        # Count pieces in the row
+        counts["row"] = self.count_pieces_line(
+            Coord(position.r, 0), Coord(position.r, self.width - 1), Coord.is_orthogonal
+        )
+
+        # Count pieces in the column
+        counts["column"] = self.count_pieces_line(
+            Coord(0, position.c),
+            Coord(self.height - 1, position.c),
+            Coord.is_orthogonal,
+        )
+
+        # Count pieces in the first diagonal (top-left to bottom-right)
+        start_diag1 = Coord(
+            max(position.r - position.c, 0), max(position.c - position.r, 0)
+        )
+        end_diag1 = Coord(
+            min(position.r + (self.width - position.c - 1), self.height - 1),
+            min(position.c + (self.height - position.r - 1), self.width - 1),
+        )
+        counts["diagonal1"] = self.count_pieces_line(
+            start_diag1, end_diag1, Coord.is_diagonal
+        )
+
+        # Count pieces in the second diagonal (top-right to bottom-left)
+        s = position.r + position.c
+        start_diag2 = Coord(max(0, s - self.width + 1), min(s, self.width - 1))
+        end_diag2 = Coord(min(s, self.height - 1), max(0, s - self.height + 1))
+        counts["diagonal2"] = self.count_pieces_line(
+            start_diag2, end_diag2, Coord.is_diagonal
+        )
+
+        return counts
 
     def reset(self) -> None:
         """
@@ -235,6 +298,7 @@ class Board:
         """
         self.clear()
         self._init_pieces()
+        self.history.seed_current_state()
 
     def clear(self) -> None:
         """
@@ -280,12 +344,13 @@ class Board:
         piece = self.at(start)
         if piece is None:
             raise PieceError("No piece at starting position")
-        if not piece.is_valid_move(end, self):
+        move = Move(start, end)
+        if not self.manager.validate_move(move):
             raise InvalidMoveError("Invalid move!")
         self.set_at(start, None)
         self.set_at(end, piece)
         piece.move(end)
-        self.history.record_move(Move(start, end))
+        self.history.record_move(move)
 
     def get_valid_moves(self, piece: Piece | None) -> list[Coord] | None:
         """
@@ -344,8 +409,10 @@ class Board:
         """
         if not (criteria(start, end)):
             return False
-        for piece in self.iter_pieces_line(start, end):
-            if piece is not None:
+        for position in self.iter_positions_line(start, end, criteria):
+            if position == start or position == end:
+                continue
+            if self.at(position) is not None:
                 return False
         return True
 

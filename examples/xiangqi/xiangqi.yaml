@@ -1,0 +1,27 @@
+pieces:
+  General:
+    symbol: G
+    class_path: examples.xiangqi.general
+  Advisor:
+    symbol: A
+    class_path: examples.xiangqi.advisor
+  Elephant:
+    symbol: E
+    class_path: examples.xiangqi.elephant
+  Horse:
+    symbol: H
+    class_path: examples.xiangqi.horse
+  Chariot:
+    symbol: R
+    class_path: examples.xiangqi.chariot
+  Cannon:
+    symbol: C
+    class_path: examples.xiangqi.cannon
+  Soldier:
+    symbol: S
+    class_path: examples.xiangqi.soldier
+
+width: 9
+height: 10
+
+fen: rheagaehr/9/1c5c1/s1s1s1s1s/9/9/S1S1S1S1S/1C5C1/9/RHEAGAEHR

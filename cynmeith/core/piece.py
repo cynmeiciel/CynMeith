@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
-from warnings import warn
+from typing import TYPE_CHECKING, Iterable
 
 from cynmeith.utils.aliases import Side2
 from cynmeith.utils.coord import Coord
@@ -40,18 +39,24 @@ class Piece(ABC):
     def is_valid_move(self, new_position: Coord, board: "Board") -> bool:
         pass
 
+    def iter_move_candidates(self, board: "Board") -> Iterable[Coord]:
+        """
+        Yield candidate destinations for this piece.
+
+        Subclasses can override this to reduce the search space and improve
+        performance. The default implementation scans the whole board.
+        """
+        return board.iter_positions()
+
     def get_valid_moves(self, board: "Board") -> list[Coord]:
         """
-        Get the valid moves for the piece.
+        Get valid moves by filtering move candidates with is_valid_move.
 
-        Although this default implementation works, this should be overridden to improve performance since it iterates over the entire board, and some pieces might not need `is_valid_move`.
-        However, you must implement `is_valid_move` and use this method first to ensure your piece is working correctly.
+        For performance-sensitive pieces, override iter_move_candidates instead
+        of duplicating this filtering logic.
         """
-        warn(
-            f"This is the default implementation of get_valid_moves at {self.__class__.__name__}.\n Overriding this method is recommended."
-        )
-        valid_moves = []
-        for position in board.iter_positions():
+        valid_moves: list[Coord] = []
+        for position in self.iter_move_candidates(board):
             if self.is_valid_move(position, board):
                 valid_moves.append(position)
         return valid_moves

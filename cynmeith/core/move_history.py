@@ -1,5 +1,7 @@
+from copy import deepcopy
 from typing import TYPE_CHECKING
 
+from cynmeith.core.piece import Piece
 from cynmeith.utils import Move, MoveHistoryError
 
 if TYPE_CHECKING:
@@ -18,9 +20,9 @@ class MoveHistory:
         self.num_moves = 0  # Number of moves made (half-moves)
         self.board = board
         self.move_stack: list[Move] = []  # List of moves
-        self.state_stack: list[Board] = []  # List of board states
+        self.state_stack: list[list[list[Piece | None]]] = []
         self.redo_stack: list[Move] = []
-        self.redo_state_stack: list[Board] = []
+        self.redo_state_stack: list[list[list[Piece | None]]] = []
 
     def clear(self) -> None:
         """
@@ -32,11 +34,20 @@ class MoveHistory:
         self.redo_state_stack.clear()
         self.num_moves = 0
 
+    def seed_current_state(self) -> None:
+        """
+        Seed the history with the board's current state.
+        """
+        self.state_stack = [deepcopy(self.board.board)]
+        self.redo_stack.clear()
+        self.redo_state_stack.clear()
+        self.num_moves = 0
+
     def record_move(self, move: Move) -> None:
         """
-        Records a move along with the current board state before execution.
+        Records a move along with the current board state after execution.
         """
-        # self.state_stack.append(self.board)  # Store board state
+        self.state_stack.append(deepcopy(self.board.board))
         self.move_stack.append(move)
         self.redo_stack.clear()
         self.redo_state_stack.clear()
@@ -46,14 +57,13 @@ class MoveHistory:
         """
         Reverts the last move, restoring the previous board state.
         """
-        if not self.move_stack:
+        if len(self.state_stack) < 2 or not self.move_stack:
             raise MoveHistoryError("No moves to undo.")
 
-        # Restore previous board state
         last_state = self.state_stack.pop()
-        self.board.board = last_state.board
-        self.redo_stack.append(self.move_stack.pop())
         self.redo_state_stack.append(last_state)
+        self.redo_stack.append(self.move_stack.pop())
+        self.board.board = deepcopy(self.state_stack[-1])
         self.num_moves -= 1
 
     def redo_move(self) -> None:
@@ -63,9 +73,8 @@ class MoveHistory:
         if not self.redo_stack:
             raise MoveHistoryError("No moves to redo.")
 
-        # Restore previous board state
         last_state = self.redo_state_stack.pop()
-        self.board.board = last_state.board
+        self.board.board = deepcopy(last_state)
         self.move_stack.append(self.redo_stack.pop())
-        self.state_stack.append(last_state)
+        self.state_stack.append(deepcopy(last_state))
         self.num_moves += 1
