@@ -48,7 +48,9 @@ class BoardCanvas(tk.Canvas):
         for col in range(self.board.width):
             label = chr(ord("A") + col) if self.board.width <= 26 else str(col + 1)
             x = self.margin + col * self.cell_size + self.cell_size // 2
-            self.create_text(x, self.margin // 2, text=label, font=("Arial", 11, "bold"))
+            self.create_text(
+                x, self.margin // 2, text=label, font=("Arial", 11, "bold")
+            )
             self.create_text(
                 x,
                 self.margin + self.board.height * self.cell_size + self.margin // 2,
@@ -59,7 +61,9 @@ class BoardCanvas(tk.Canvas):
         for row in range(self.board.height):
             label = str(self.board.height - row)
             y = self.margin + row * self.cell_size + self.cell_size // 2
-            self.create_text(self.margin // 2, y, text=label, font=("Arial", 11, "bold"))
+            self.create_text(
+                self.margin // 2, y, text=label, font=("Arial", 11, "bold")
+            )
             self.create_text(
                 self.margin + self.board.width * self.cell_size + self.margin // 2,
                 y,
@@ -74,7 +78,9 @@ class BoardCanvas(tk.Canvas):
         for row in range(self.board.height):
             for col in range(self.board.width):
                 color = (
-                    self.theme.light_color if (row + col) % 2 == 0 else self.theme.dark_color
+                    self.theme.light_color
+                    if (row + col) % 2 == 0
+                    else self.theme.dark_color
                 )
                 x0, y0, x1, y1 = self._cell_origin(row, col)
                 self.create_rectangle(
@@ -104,7 +110,9 @@ class BoardCanvas(tk.Canvas):
             y0 += 20
             x1 -= 20
             y1 -= 20
-            self.create_oval(x0, y0, x1, y1, fill=self.theme.highlight_color, outline="")
+            self.create_oval(
+                x0, y0, x1, y1, fill=self.theme.highlight_color, outline=""
+            )
 
         if selected_piece is not None:
             position = selected_piece.position
@@ -113,7 +121,9 @@ class BoardCanvas(tk.Canvas):
             y0 += 4
             x1 -= 4
             y1 -= 4
-            self.create_rectangle(x0, y0, x1, y1, outline=self.theme.selected_color, width=3)
+            self.create_rectangle(
+                x0, y0, x1, y1, outline=self.theme.selected_color, width=3
+            )
 
         for row in range(self.board.height):
             for col in range(self.board.width):
@@ -121,7 +131,9 @@ class BoardCanvas(tk.Canvas):
                 if piece is None:
                     continue
                 fill = (
-                    self.theme.piece_color_true if piece.side else self.theme.piece_color_false
+                    self.theme.piece_color_true
+                    if piece.side
+                    else self.theme.piece_color_false
                 )
                 x0, y0, _, _ = self._cell_origin(row, col)
                 self.create_text(

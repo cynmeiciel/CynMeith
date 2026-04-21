@@ -7,6 +7,5 @@ if __package__ is None or __package__ == "":
 from examples.ui.app import TkGameApp
 from examples.xiangqi.game import build_game_spec
 
-
 if __name__ == "__main__":
     TkGameApp(build_game_spec()).mainloop()

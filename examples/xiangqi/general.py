@@ -10,4 +10,6 @@ class General(Piece):
             return False
         if not in_palace(new_position, self.side):
             return False
-        return self.position.manhattan_to(new_position) == 1 and self.position.is_orthogonal(new_position)
+        return self.position.manhattan_to(
+            new_position
+        ) == 1 and self.position.is_orthogonal(new_position)

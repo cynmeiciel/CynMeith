@@ -1,4 +1,4 @@
-from typing import Callable, Generator
+from typing import Callable, Iterable
 
 from cynmeith.core.config import Config
 from cynmeith.core.move_history import MoveHistory
@@ -85,9 +85,7 @@ class Board:
                     print(symbol, end=" ")
             print()
 
-    def iter_pieces(
-        self, none_piece: bool = False
-    ) -> Generator[Piece | None, None, None]:
+    def iter_pieces(self, none_piece: bool = False) -> Iterable[Piece | None]:
         """
         Iterate over all pieces on the board.
 
@@ -98,7 +96,7 @@ class Board:
                 if piece is not None or none_piece:
                     yield piece
 
-    def iter_pieces_by_side(self, side: Side2) -> Generator[Piece | None, None, None]:
+    def iter_pieces_by_side(self, side: Side2) -> Iterable[Piece | None]:
         """
         Iterate over all pieces by side.
         """
@@ -107,9 +105,7 @@ class Board:
             if piece.side == side:
                 yield piece
 
-    def iter_pieces_by_type(
-        self, piece_symbol: PieceSymbol
-    ) -> Generator[Piece | None, None, None]:
+    def iter_pieces_by_type(self, piece_symbol: PieceSymbol) -> Iterable[Piece | None]:
         """
         Iterate over all pieces by type.
         """
@@ -118,7 +114,7 @@ class Board:
             if piece.symbol == piece_symbol:
                 yield piece
 
-    def iter_positions(self) -> Generator[Coord, None, None]:
+    def iter_positions(self) -> Iterable[Coord]:
         """
         Iterate over all coordinates on the board.
         """
@@ -128,7 +124,7 @@ class Board:
 
     def iter_enumerate(
         self, none_piece: bool = False
-    ) -> Generator[tuple[Coord, Piece | None], None, None]:
+    ) -> Iterable[tuple[Coord, Piece | None]]:
         """
         Iterate over all pieces on the board with their positions.
         """
@@ -142,7 +138,7 @@ class Board:
         start: Coord,
         end: Coord,
         criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional,
-    ) -> Generator[Coord, None, None]:
+    ) -> Iterable[Coord]:
         """
         Iterate over all positions in a line between two positions.
         """
@@ -159,7 +155,7 @@ class Board:
         end: Coord,
         criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional,
         none_piece: bool = False,
-    ) -> Generator[Piece | None, None, None]:
+    ) -> Iterable[Piece | None]:
         """
         Iterate over all pieces in a line between two positions.
 
@@ -176,7 +172,7 @@ class Board:
         end: Coord,
         criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional,
         none_piece: bool = False,
-    ) -> Generator[tuple[Coord, Piece | None], None, None]:
+    ) -> Iterable[tuple[Coord, Piece | None]]:
         """
         Iterate over all pieces with their positions in a line between two positions.
 
@@ -187,9 +183,7 @@ class Board:
             if piece is not None or none_piece:
                 yield position, piece
 
-    def iter_positions_towards(
-        self, start: Coord, direction: Coord
-    ) -> Generator[Coord, None, None]:
+    def iter_positions_towards(self, start: Coord, direction: Coord) -> Iterable[Coord]:
         """
         Iterate over all positions in a direction from a starting position.
         """
@@ -199,7 +193,7 @@ class Board:
 
     def iter_pieces_towards(
         self, start: Coord, direction: Coord
-    ) -> Generator[Piece | None, None, None]:
+    ) -> Iterable[Piece | None]:
         """
         Iterate over all pieces in a direction from a starting position.
         """
@@ -210,7 +204,7 @@ class Board:
 
     def iter_enumerate_towards(
         self, start: Coord, direction: Coord, none_piece: bool = False
-    ) -> Generator[tuple[Coord, Piece | None], None, None]:
+    ) -> Iterable[tuple[Coord, Piece | None]]:
         """
         Iterate over all pieces with their positions in a direction from a starting position.
 

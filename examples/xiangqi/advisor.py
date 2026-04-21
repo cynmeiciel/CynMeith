@@ -10,4 +10,7 @@ class Advisor(Piece):
             return False
         if not in_palace(new_position, self.side):
             return False
-        return self.position.is_diagonal(new_position) and self.position.chebyshev_to(new_position) == 1
+        return (
+            self.position.is_diagonal(new_position)
+            and self.position.chebyshev_to(new_position) == 1
+        )

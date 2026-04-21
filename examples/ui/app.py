@@ -2,8 +2,7 @@ import tkinter as tk
 
 from cynmeith import Board, Config
 from cynmeith.core.piece import Piece
-from cynmeith.utils import Coord
-from cynmeith.utils import InvalidMoveError, MoveHistoryError
+from cynmeith.utils import Coord, InvalidMoveError, MoveHistoryError
 
 from .canvas import BoardCanvas
 from .spec import GameSpec
@@ -29,7 +28,9 @@ class TkGameApp(tk.Tk):
         self.board_canvas.pack()
         self.board_canvas.bind("<Button-1>", self.on_click)
 
-        self.controls = ControlBar(self, self.undo_move, self.redo_move, self.reset_board)
+        self.controls = ControlBar(
+            self, self.undo_move, self.redo_move, self.reset_board
+        )
         self.controls.pack(fill="x", pady=4)
 
         self.status_bar = StatusBar(self, spec.status_hint)

@@ -16,5 +16,8 @@ class Elephant(Piece):
         if not self.side and new_position.r < 5:
             return False
 
-        middle = Coord((self.position.r + new_position.r) // 2, (self.position.c + new_position.c) // 2)
+        middle = Coord(
+            (self.position.r + new_position.r) // 2,
+            (self.position.c + new_position.c) // 2,
+        )
         return board.is_empty(middle)

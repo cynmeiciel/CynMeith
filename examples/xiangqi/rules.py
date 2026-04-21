@@ -1,6 +1,5 @@
 from cynmeith.utils import Coord
 
-
 TOP_PALACE_ROWS = range(0, 3)
 BOTTOM_PALACE_ROWS = range(7, 10)
 PALACE_COLS = range(3, 6)

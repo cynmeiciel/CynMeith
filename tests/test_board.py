@@ -94,7 +94,9 @@ def test_board_move_uses_move_manager():
     """
     Test that Board.move delegates validation to the configured move manager.
     """
-    board = Board(Config("examples/chess/testchess.yaml"), move_manager=RejectAllMoveManager)
+    board = Board(
+        Config("examples/chess/testchess.yaml"), move_manager=RejectAllMoveManager
+    )
 
     with pytest.raises(InvalidMoveError):
         board.move(Coord(1, 0), Coord(2, 0))
