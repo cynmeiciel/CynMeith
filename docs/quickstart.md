@@ -81,4 +81,5 @@ game.redo_move()
 
 ## Next Step
 
-Continue with [Architecture](architecture.md) and [Extending the Engine](extending.md).
+Continue with [Python Enough for CynMeith](python-enough.md),
+[Your First Custom Game](first-game.md), and [Extending the Engine](extending.md).

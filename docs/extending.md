@@ -2,6 +2,11 @@
 
 This page covers the recommended extension points.
 
+If you are new to writing small Python classes, read
+[Python Enough for CynMeith](python-enough.md) first.
+If you want a guided example from blank slate to playable prototype, use
+[Your First Custom Game](first-game.md).
+
 ## 1. Add a New Piece Class
 
 Subclass `Piece` and implement `is_valid_move`.
@@ -96,3 +101,19 @@ Use this checklist:
 - Side-to-move lifecycle: turn policy
 - UI interactions: example app layer, not core
 
+## 6. Current Limits of the Extension Model
+
+The current extension surface is strongest for:
+
+- piece movement
+- move side effects
+- turn structure
+
+It is not yet first-class for:
+
+- win conditions
+- phase systems
+- scoring
+- resource systems
+
+Those are planned engine goals and are described in [Roadmap](roadmap.md).

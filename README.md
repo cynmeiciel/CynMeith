@@ -7,7 +7,8 @@ Current release: 1.0.0
 
 It includes playable Tk examples for chess and xiangqi.
 
-CynMeith is a small, flexible board-game framework for prototyping turn-based games and custom rule sets.
+CynMeith is a small, flexible board-game framework for prototyping original
+turn-based games and custom rule sets.
 
 After cooking some spaghetti that made me refuse to look at them again, I decided to write a brand new one, with my brand new brain.
 
@@ -48,5 +49,8 @@ game.move(...)
 ## Documentation
 
 - Start here: [docs/index.md](docs/index.md)
+- Project guide: [docs/project.md](docs/project.md)
+- Python-enough guide: [docs/python-enough.md](docs/python-enough.md)
+- First custom game: [docs/first-game.md](docs/first-game.md)
 - API reference: [docs/api.md](docs/api.md)
 - Examples launcher: [examples/tk_demo.py](examples/tk_demo.py)
