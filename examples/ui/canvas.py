@@ -30,16 +30,18 @@ class BoardCanvas(tk.Canvas):
         )
 
     def position_from_event(self, event: tk.Event) -> Coord | None:
-        row = (event.y - self.margin) // self.cell_size
+        screen_row = (event.y - self.margin) // self.cell_size
         col = (event.x - self.margin) // self.cell_size
+        row = self.board.height - 1 - screen_row
         position = Coord(row, col)
         if not self.board.is_in_bounds(position):
             return None
         return position
 
     def _cell_origin(self, row: int, col: int) -> tuple[int, int, int, int]:
+        screen_row = self.board.height - 1 - row
         x0 = self.margin + col * self.cell_size
-        y0 = self.margin + row * self.cell_size
+        y0 = self.margin + screen_row * self.cell_size
         x1 = x0 + self.cell_size
         y1 = y0 + self.cell_size
         return x0, y0, x1, y1
@@ -58,9 +60,10 @@ class BoardCanvas(tk.Canvas):
                 font=("Arial", 11, "bold"),
             )
 
-        for row in range(self.board.height):
-            label = str(self.board.height - row)
-            y = self.margin + row * self.cell_size + self.cell_size // 2
+        for screen_row in range(self.board.height):
+            row = self.board.height - 1 - screen_row
+            label = str(row + 1)
+            y = self.margin + screen_row * self.cell_size + self.cell_size // 2
             self.create_text(
                 self.margin // 2, y, text=label, font=("Arial", 11, "bold")
             )

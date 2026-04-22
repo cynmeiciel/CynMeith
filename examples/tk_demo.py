@@ -15,9 +15,19 @@ def main() -> None:
     parser.add_argument(
         "game", choices=("chess", "xiangqi"), nargs="?", default="chess"
     )
+    parser.add_argument(
+        "--config-source",
+        choices=("yaml", "data"),
+        default="yaml",
+        help="Choose where config comes from: yaml file or in-code data mapping.",
+    )
     args = parser.parse_args()
 
-    spec = build_xiangqi_spec() if args.game == "xiangqi" else build_chess_spec()
+    spec = (
+        build_xiangqi_spec(args.config_source)
+        if args.game == "xiangqi"
+        else build_chess_spec(args.config_source)
+    )
     TkGameApp(spec).mainloop()
 
 

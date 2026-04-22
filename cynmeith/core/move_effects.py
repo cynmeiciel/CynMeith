@@ -22,8 +22,21 @@ class MoveEffect(ABC):
         pass
 
 
+"""
+This module defines reusable move effects and presets for common game actions like captures, promotions, and relocations.
+Move effects are designed to be composable and can be used in custom move managers to implement complex move resolutions.
+"""
+
+
 @dataclass(frozen=True)
 class RemovePieceEffect(MoveEffect):
+    """
+    Effect to remove a piece from the board, typically used for captures.
+
+    Attributes:
+        position: The coordinate of the piece to be removed.
+    """
+
     position: Coord
 
     def apply(self, board: Board, move: Move, piece: Piece) -> None:
@@ -32,6 +45,14 @@ class RemovePieceEffect(MoveEffect):
 
 @dataclass(frozen=True)
 class MovePieceEffect(MoveEffect):
+    """
+    Effect to move a piece from one coordinate to another, used for special moves that require additional relocations (e.g., castling).
+
+    Attributes:
+        start: The starting coordinate of the piece.
+        end: The ending coordinate of the piece.
+    """
+
     start: Coord
     end: Coord
 
@@ -46,6 +67,13 @@ class MovePieceEffect(MoveEffect):
 
 @dataclass(frozen=True)
 class PromotePieceEffect(MoveEffect):
+    """
+    Effect to promote a piece to another type, typically used for pawn promotion in chess.
+    Attributes:
+        symbol: The symbol representing the piece to promote to (e.g., 'Q' for queen).
+        position: The coordinate where the promotion occurs. If None, defaults to the move's end coordinate.
+    """
+
     symbol: str
     position: Coord | None = None
 
