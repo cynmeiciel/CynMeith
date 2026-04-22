@@ -51,8 +51,6 @@ class MoveManager:
         move_actor = bool(extra.get("move_actor", True))
         if move_actor:
             self.board._apply_move(move, piece)
-        else:
-            self.board.history.record_move(move)
 
         effects = self._build_effects(move)
         for effect in effects:

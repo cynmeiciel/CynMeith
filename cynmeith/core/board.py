@@ -56,7 +56,7 @@ class Board:
             for c, piece in enumerate(row):
                 if piece != " ":
                     position = Coord(r, c)
-                    self.set_at(position, self.factory.create_piece(piece, position))
+                    self._set_at(position, self.factory.create_piece(piece, position))
 
     def __str__(self) -> str:
         return "\n".join(
@@ -313,7 +313,18 @@ class Board:
 
     def set_at(self, position: Coord, piece: Piece | None) -> None:
         """
-        Set a piece at a given position.
+        Set a piece at a given position and reseed history from the new board state.
+
+        This method is intended for setup-time board editing. Direct mutations
+        invalidate existing undo/redo history, so the current position becomes
+        the new baseline state.
+        """
+        self._set_at(position, piece)
+        self.history.seed_current_state()
+
+    def _set_at(self, position: Coord, piece: Piece | None) -> None:
+        """
+        Low-level placement primitive used by move application and effects.
         """
         if not self.is_in_bounds(position):
             raise PositionError(f"Position out of bounds {position}")
@@ -356,8 +367,8 @@ class Board:
         """
         Apply a move that has already been validated.
         """
-        self.set_at(move.start, None)
-        self.set_at(move.end, piece)
+        self._set_at(move.start, None)
+        self._set_at(move.end, piece)
         piece.move(move.end)
 
     def get_valid_moves(self, piece: Piece | None) -> list[Coord] | None:

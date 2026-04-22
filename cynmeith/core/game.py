@@ -16,6 +16,7 @@ from cynmeith.utils.aliases import (
     MoveHistoryError,
     MoveType,
     PieceError,
+    PositionError,
     Side2,
 )
 from cynmeith.utils.coord import Coord
@@ -163,13 +164,16 @@ class Game:
         move_type: MoveType = "",
         extra_info: MoveExtraInfo | None = None,
     ) -> bool:
-        piece = self.board.at(start)
-        if piece is None:
+        try:
+            piece = self.board.at(start)
+            if piece is None:
+                return False
+            move = Move(start, end, move_type, extra_info)
+            if not self.turn_policy.can_move(self, piece, move):
+                return False
+            resolved_move = self.board.manager.resolve_move(move)
+        except PositionError:
             return False
-        move = Move(start, end, move_type, extra_info)
-        if not self.turn_policy.can_move(self, piece, move):
-            return False
-        resolved_move = self.board.manager.resolve_move(move)
         return resolved_move is not None
 
     def move(

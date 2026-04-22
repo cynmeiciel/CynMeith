@@ -6,7 +6,7 @@ authors = [
     {name = "cynmeiciel",email = "eplmr123duy@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "pyyaml (>=6.0.2,<7.0.0)"
 ]
@@ -34,3 +34,6 @@ multi_line_output = 3
 force_grid_wrap = 0
 combine_as_imports = true
 line_length = 88
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

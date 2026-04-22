@@ -80,3 +80,9 @@ class FENError(ValueError):
     """
     Raised when an invalid FEN string is attempted.
     """
+
+
+class ConfigError(ValueError):
+    """
+    Raised when configuration data is missing required fields or has invalid values.
+    """

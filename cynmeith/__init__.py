@@ -18,11 +18,13 @@ from cynmeith.core.move_history import MoveHistory
 from cynmeith.core.move_manager import MoveManager
 from cynmeith.core.piece import Piece
 from cynmeith.core.piece_factory import PieceFactory
+from cynmeith.utils.aliases import ConfigError
 
 __author__ = "Tran Van Duy"
 __all__ = [
     "Board",
     "Config",
+    "ConfigError",
     "EffectPresets",
     "FreeTurnPolicy",
     "Game",

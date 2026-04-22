@@ -48,11 +48,9 @@ Promotion flow in chess example:
 
 The xiangqi stack uses:
 
-- `FreeTurnPolicy` in example setup
+- `QuotaTurnPolicy(moves_per_turn=1)` for standard one-move turns
 - `XiangqiManager` for general-facing rule
 - piece classes in `examples/xiangqi`
-
-Note: `FreeTurnPolicy` is used in the sample to emphasize engine flexibility. If you want strict side alternation, use `QuotaTurnPolicy(moves_per_turn=1)`.
 
 The xiangqi UI spec also enables river rendering.
 

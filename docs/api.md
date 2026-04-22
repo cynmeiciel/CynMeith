@@ -37,6 +37,8 @@ Convenience constructors:
 - `Config.from_file(path)`
 - `Config.from_data(mapping)`
 
+Invalid config shapes raise `ConfigError`.
+
 Main fields:
 
 - `pieces`
@@ -96,6 +98,7 @@ Properties:
 Notes:
 
 - `Game` wraps `Board` and turn policy snapshots so undo/redo restores both board and turn state.
+- `can_move(...)` returns `False` for invalid or out-of-bounds coordinates.
 
 ## Turn Policies
 

@@ -5,6 +5,7 @@ from cynmeith.core.piece import Piece
 from cynmeith.utils import Coord
 from cynmeith.utils.aliases import Move
 from examples.chess.chess_manager import ChessManager
+from examples.xiangqi.game import build_game_spec as build_xiangqi_spec
 
 
 def make_chess_config_data() -> dict:
@@ -101,6 +102,22 @@ def test_game_supports_custom_promotion_piece() -> None:
     assert game.board.at(Coord(0, 0)).get_symbol_with_side() == "n"
 
 
+def test_manual_setup_resets_undo_baseline() -> None:
+    game = Game(
+        Config.from_data(make_empty_chess_config_data()), move_manager=ChessManager
+    )
+
+    pawn = game.board.factory.create_piece("P", Coord(6, 0))
+    game.board.set_at(Coord(6, 0), pawn)
+
+    game.move(Coord(6, 0), Coord(7, 0), extra_info={"promotion": "Q"})
+    game.undo_move()
+
+    restored = game.board.at(Coord(6, 0))
+    assert restored is not None
+    assert restored.get_symbol_with_side() == "P"
+
+
 def test_game_supports_kingside_castling() -> None:
     game = Game(
         Config.from_data(make_empty_chess_config_data()), move_manager=ChessManager
@@ -138,6 +155,13 @@ def test_game_rejects_castling_through_check() -> None:
     game.board.set_at(Coord(3, 5), black_rook)
 
     assert not game.can_move(Coord(0, 4), Coord(0, 6))
+
+
+def test_game_can_move_returns_false_for_out_of_bounds_positions() -> None:
+    game = Game(Config.from_data(make_chess_config_data()), move_manager=ChessManager)
+
+    assert not game.can_move(Coord(1, 0), Coord(-1, 0))
+    assert not game.can_move(Coord(99, 0), Coord(0, 0))
 
 
 class StrikePiece(Piece):
@@ -194,3 +218,12 @@ def test_game_supports_stationary_skill_move_with_side_effect() -> None:
 
     assert game.board.at(Coord(1, 1)).get_symbol_with_side() == "S"
     assert game.board.at(Coord(1, 2)) is None
+    assert game.board.history.num_moves == 1
+    assert len(game.board.history.move_stack) == 1
+    assert len(game.board.history.state_stack) == 2
+
+
+def test_xiangqi_example_uses_standard_turn_order() -> None:
+    game = build_xiangqi_spec().create_game()
+
+    assert game.current_side is True

@@ -40,7 +40,7 @@ class RemovePieceEffect(MoveEffect):
     position: Coord
 
     def apply(self, board: Board, move: Move, piece: Piece) -> None:
-        board.set_at(self.position, None)
+        board._set_at(self.position, None)
 
 
 @dataclass(frozen=True)
@@ -60,8 +60,8 @@ class MovePieceEffect(MoveEffect):
         moving_piece = board.at(self.start)
         if moving_piece is None:
             return
-        board.set_at(self.start, None)
-        board.set_at(self.end, moving_piece)
+        board._set_at(self.start, None)
+        board._set_at(self.end, moving_piece)
         moving_piece.move(self.end)
 
 
@@ -84,7 +84,7 @@ class PromotePieceEffect(MoveEffect):
             raise ValueError("Promotion symbol must be a single character.")
         final_symbol = promotion_symbol if piece.side else promotion_symbol.lower()
         promoted_piece = board.factory.create_piece(final_symbol, target)
-        board.set_at(target, promoted_piece)
+        board._set_at(target, promoted_piece)
 
 
 class EffectPresets:

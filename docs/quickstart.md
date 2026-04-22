@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Python 3.13+
+- Python 3.10+
 - Poetry
 
 ## Install
@@ -41,8 +41,8 @@ from cynmeith import Config, Game
 cfg = Config.from_data(
     {
         "pieces": {
-            "P": {
-                "class_path": "examples.chess.pawn.Pawn",
+            "Pawn": {
+                "class_path": "examples.chess.pawn",
                 "symbol": "P",
             }
         },
@@ -61,6 +61,8 @@ game = Game(cfg)
 if game.can_move(start, end):
     game.move(start, end)
 ```
+
+Out-of-bounds coordinates simply return `False` from `game.can_move(...)`.
 
 Promotion (programmatic usage):
 

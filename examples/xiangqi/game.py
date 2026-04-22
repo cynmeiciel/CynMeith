@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Literal
 
-from cynmeith import Config, FreeTurnPolicy, Game
+from cynmeith import Config, Game, QuotaTurnPolicy
 from examples.ui.spec import BoardTheme, GameSpec
 
 from .xiangqi_manager import XiangqiManager
@@ -54,7 +54,7 @@ def build_game_spec(config_source: Literal["yaml", "data"] = "yaml") -> GameSpec
         create_game=lambda: Game(
             _build_config(config_source),
             XiangqiManager,
-            turn_policy=FreeTurnPolicy(),
+            turn_policy=QuotaTurnPolicy(moves_per_turn=1),
         ),
         theme=BoardTheme(
             light_color="#f5deb3",
@@ -65,5 +65,8 @@ def build_game_spec(config_source: Literal["yaml", "data"] = "yaml") -> GameSpec
             piece_color_false="#111111",
         ),
         show_river=True,
-        status_hint=f"Xiangqi: river is shown, generals must stay in palace. Config: {config_source}.",
+        status_hint=(
+            "Xiangqi standard turns: one move per side, river is shown, "
+            f"generals must stay in palace. Config: {config_source}."
+        ),
     )
