@@ -1,10 +1,27 @@
 from pathlib import Path
 from typing import Literal
 
-from cynmeith import Config, Game, QuotaTurnPolicy
+from cynmeith import (
+    Config,
+    Game,
+    MaterialScoreSystem,
+    QuotaTurnPolicy,
+    RoyalCheckmateCondition,
+    RoyalStalemateCondition,
+)
 from examples.ui.spec import BoardTheme, GameSpec
 
 from .chess_manager import ChessManager
+from .royal_rules import CHESS_ROYAL_RULES
+
+CHESS_MATERIAL_VALUES = {
+    "P": 1,
+    "N": 3,
+    "B": 3,
+    "R": 5,
+    "Q": 9,
+    "K": 0,
+}
 
 
 def _build_chess_config_data() -> dict:
@@ -25,7 +42,7 @@ def _build_chess_config_data() -> dict:
         },
         "width": 8,
         "height": 8,
-        "fen": "rnbqkbnr/pppppppp/8/8/8/7Q/PPPPPPPP/RNBQKBNR",
+        "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
     }
 
 
@@ -35,6 +52,17 @@ def _build_config(config_source: Literal["yaml", "data"]) -> Config:
     return Config.from_file(Path(__file__).with_name("chess.yaml"))
 
 
+def _build_win_conditions() -> list:
+    return [
+        RoyalCheckmateCondition(CHESS_ROYAL_RULES, reason="Checkmate."),
+        RoyalStalemateCondition(CHESS_ROYAL_RULES, kind="draw", reason="Stalemate."),
+    ]
+
+
+def _build_scoring_system() -> MaterialScoreSystem:
+    return MaterialScoreSystem(CHESS_MATERIAL_VALUES)
+
+
 def build_game_spec(config_source: Literal["yaml", "data"] = "yaml") -> GameSpec:
     return GameSpec(
         title="Chess",
@@ -42,6 +70,8 @@ def build_game_spec(config_source: Literal["yaml", "data"] = "yaml") -> GameSpec
             _build_config(config_source),
             ChessManager,
             turn_policy=QuotaTurnPolicy(moves_per_turn=1),
+            scoring_system=_build_scoring_system(),
+            win_conditions=_build_win_conditions(),
         ),
         theme=BoardTheme(
             light_color="#f7f1e3",
@@ -51,7 +81,10 @@ def build_game_spec(config_source: Literal["yaml", "data"] = "yaml") -> GameSpec
             piece_color_true="#111111",
             piece_color_false="#7f1d1d",
         ),
-        status_hint=f"Chess standard mode: one move per turn. Config: {config_source}.",
+        status_hint=(
+            "Chess standard turns with material scoring. "
+            f"Checkmate wins and stalemate draws. Config: {config_source}."
+        ),
         promotion_choices=("Q", "R", "B", "N"),
         promotion_prompt="Choose promotion piece",
     )

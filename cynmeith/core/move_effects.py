@@ -2,14 +2,26 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 from cynmeith.utils.coord import Coord
 
 if TYPE_CHECKING:
-    from cynmeith.core.board import Board
     from cynmeith.core.piece import Piece
     from cynmeith.utils.aliases import Move
+
+
+class PieceFactoryLike(Protocol):
+    def create_piece(self, piece_symbol: str, position: Coord) -> Piece | None: ...
+
+
+class BoardLike(Protocol):
+    @property
+    def factory(self) -> PieceFactoryLike: ...
+
+    def at(self, position: Coord) -> Piece | None: ...
+
+    def _set_at(self, position: Coord, piece: Piece | None) -> None: ...
 
 
 class MoveEffect(ABC):
@@ -18,7 +30,7 @@ class MoveEffect(ABC):
     """
 
     @abstractmethod
-    def apply(self, board: Board, move: Move, piece: Piece) -> None:
+    def apply(self, board: BoardLike, move: Move, piece: Piece) -> None:
         pass
 
 
@@ -39,7 +51,7 @@ class RemovePieceEffect(MoveEffect):
 
     position: Coord
 
-    def apply(self, board: Board, move: Move, piece: Piece) -> None:
+    def apply(self, board: BoardLike, move: Move, piece: Piece) -> None:
         board._set_at(self.position, None)
 
 
@@ -56,7 +68,7 @@ class MovePieceEffect(MoveEffect):
     start: Coord
     end: Coord
 
-    def apply(self, board: Board, move: Move, piece: Piece) -> None:
+    def apply(self, board: BoardLike, move: Move, piece: Piece) -> None:
         moving_piece = board.at(self.start)
         if moving_piece is None:
             return
@@ -77,7 +89,7 @@ class PromotePieceEffect(MoveEffect):
     symbol: str
     position: Coord | None = None
 
-    def apply(self, board: Board, move: Move, piece: Piece) -> None:
+    def apply(self, board: BoardLike, move: Move, piece: Piece) -> None:
         target = self.position or move.end
         promotion_symbol = self.symbol.upper()
         if len(promotion_symbol) != 1:

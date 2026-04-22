@@ -1,10 +1,28 @@
 from pathlib import Path
 from typing import Literal
 
-from cynmeith import Config, Game, QuotaTurnPolicy
+from cynmeith import (
+    Config,
+    Game,
+    MaterialScoreSystem,
+    QuotaTurnPolicy,
+    RoyalCheckmateCondition,
+    RoyalStalemateCondition,
+)
 from examples.ui.spec import BoardTheme, GameSpec
 
+from .royal_rules import XIANGQI_ROYAL_RULES
 from .xiangqi_manager import XiangqiManager
+
+XIANGQI_MATERIAL_VALUES = {
+    "G": 0,
+    "A": 2,
+    "E": 2,
+    "H": 4,
+    "R": 9,
+    "C": 4,
+    "S": 1,
+}
 
 
 def _build_xiangqi_config_data() -> dict:
@@ -48,6 +66,21 @@ def _build_config(config_source: Literal["yaml", "data"]) -> Config:
     return Config.from_file(Path(__file__).with_name("xiangqi.yaml"))
 
 
+def _build_win_conditions() -> list:
+    return [
+        RoyalCheckmateCondition(XIANGQI_ROYAL_RULES, reason="Checkmate."),
+        RoyalStalemateCondition(
+            XIANGQI_ROYAL_RULES,
+            kind="win",
+            reason="No legal moves.",
+        ),
+    ]
+
+
+def _build_scoring_system() -> MaterialScoreSystem:
+    return MaterialScoreSystem(XIANGQI_MATERIAL_VALUES)
+
+
 def build_game_spec(config_source: Literal["yaml", "data"] = "yaml") -> GameSpec:
     return GameSpec(
         title="Xiangqi",
@@ -55,6 +88,8 @@ def build_game_spec(config_source: Literal["yaml", "data"] = "yaml") -> GameSpec
             _build_config(config_source),
             XiangqiManager,
             turn_policy=QuotaTurnPolicy(moves_per_turn=1),
+            scoring_system=_build_scoring_system(),
+            win_conditions=_build_win_conditions(),
         ),
         theme=BoardTheme(
             light_color="#f5deb3",
@@ -66,7 +101,7 @@ def build_game_spec(config_source: Literal["yaml", "data"] = "yaml") -> GameSpec
         ),
         show_river=True,
         status_hint=(
-            "Xiangqi standard turns: one move per side, river is shown, "
-            f"generals must stay in palace. Config: {config_source}."
+            "Xiangqi standard turns with material scoring. "
+            f"Checkmate wins and stalemate loses. Config: {config_source}."
         ),
     )

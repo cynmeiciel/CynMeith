@@ -40,6 +40,7 @@ hiding the rules from you.
 - Standard move validation pipeline (`MoveManager`)
 - Side-effect pipeline (`MoveEffect` + presets)
 - Turn strategies (`FreeTurnPolicy`, `QuotaTurnPolicy`)
+- First-class game-level hooks for win conditions, phases, resources, and scoring
 - Snapshot-based undo/redo
 - Tk sample applications for chess and xiangqi
 

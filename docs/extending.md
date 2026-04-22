@@ -99,21 +99,78 @@ Use this checklist:
 - Cross-piece or board-wide rule constraints: manager
 - Multi-piece side effects after successful move: effects
 - Side-to-move lifecycle: turn policy
+- Game-over checks: win condition
+- Phase-specific restrictions and progression: phase system
+- Resource budgets and move affordability: resource system
+- Score calculation: scoring system
 - UI interactions: example app layer, not core
 
-## 6. Current Limits of the Extension Model
+## 6. Add Game-Level Systems
 
-The current extension surface is strongest for:
+Use the game-level hooks when rules are larger than move geometry.
+
+`WinCondition` is for terminal state checks:
+
+- elimination
+- target reach
+- no-legal-moves conditions
+- move-limit draws
+
+`PhaseSystem` is for stage-based rule changes:
+
+- setup phase vs battle phase
+- turn-count phase shifts
+- phase-specific move restrictions
+
+`ResourceSystem` is for move affordability or side budgets:
+
+- action points
+- mana
+- per-turn special move quotas
+
+`ScoringSystem` is for score reporting:
+
+- piece-count score
+- material score
+- checkpoint score
+
+Each of these systems supports reset/snapshot/restore so `Game` can keep them in
+sync with undo/redo.
+
+Useful built-ins now included in the framework:
+
+- `EliminatePieceCondition`
+- `ReachSquareCondition`
+- `NoLegalMovesCondition`
+- `MoveLimitDrawCondition`
+- `StaticPhaseSystem`
+- `TurnCountPhaseSystem`
+- `TwoStagePhaseSystem`
+- `ActionPointSystem`
+- `PieceCountScoringSystem`
+- `MaterialScoreSystem`
+
+For chess-like games where the royal piece cannot be captured directly, use the
+royal-safety preset family:
+
+- `RoyalRuleset`
+- `RoyalSafetyMoveManager`
+- `RoyalCheckmateCondition`
+- `RoyalStalemateCondition`
+
+## 7. Current Limits of the Extension Model
+
+The current extension surface is now broad enough for:
 
 - piece movement
 - move side effects
 - turn structure
-
-It is not yet first-class for:
-
 - win conditions
 - phase systems
 - scoring
 - resource systems
 
-Those are planned engine goals and are described in [Roadmap](roadmap.md).
+The current limitation is not that these hooks are missing. The current
+limitation is that built-in presets are still intentionally minimal.
+
+That follow-up work is described in [Roadmap](roadmap.md).

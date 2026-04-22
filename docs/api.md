@@ -11,13 +11,33 @@ For learning flow and architecture rationale, start from [docs/index.md](index.m
 - `Board`
 - `Config`
 - `Game`
+- `GameOutcome`
+- `BoardSimulation`
+- `EliminatePieceCondition`
+- `ReachSquareCondition`
+- `NoLegalMovesCondition`
+- `MoveLimitDrawCondition`
+- `RoyalCheckmateCondition`
+- `RoyalStalemateCondition`
 - `MoveManager`
+- `RoyalRuleset`
+- `RoyalSafetyMoveManager`
 - `MoveHistory`
+- `PhaseSystem`
+- `StaticPhaseSystem`
+- `TurnCountPhaseSystem`
+- `TwoStagePhaseSystem`
 - `Piece`
 - `PieceFactory`
+- `ResourceSystem`
+- `ActionPointSystem`
+- `ScoringSystem`
+- `PieceCountScoringSystem`
+- `MaterialScoreSystem`
 - `TurnPolicy`
 - `FreeTurnPolicy`
 - `QuotaTurnPolicy`
+- `WinCondition`
 - `MoveEffect`
 - `RemovePieceEffect`
 - `MovePieceEffect`
@@ -80,7 +100,7 @@ Notes:
 
 ## Game
 
-`Game(config, move_manager=MoveManager, move_history=MoveHistory, turn_policy=None)` orchestrates gameplay with turn control.
+`Game(config, move_manager=MoveManager, move_history=MoveHistory, turn_policy=None, phase_system=None, resource_system=None, scoring_system=None, win_conditions=None)` orchestrates gameplay with turn control and optional game-level systems.
 
 Important methods:
 
@@ -90,15 +110,20 @@ Important methods:
 - `reset()`
 - `undo_move()`
 - `redo_move()`
+- `get_scores()`
 
 Properties:
 
 - `current_side`
+- `current_phase`
+- `outcome`
+- `is_over`
 
 Notes:
 
-- `Game` wraps `Board` and turn policy snapshots so undo/redo restores both board and turn state.
+- `Game` wraps `Board` and snapshots turn state, phase state, resource state, scoring state, and outcome together for undo/redo.
 - `can_move(...)` returns `False` for invalid or out-of-bounds coordinates.
+- `can_move(...)` also returns `False` once the game is over.
 
 ## Turn Policies
 
@@ -117,6 +142,62 @@ Provided implementations:
 
 - `FreeTurnPolicy`: no side restriction.
 - `QuotaTurnPolicy(moves_per_turn=1, starting_side=True)`: side switches after fixed quota.
+
+## Game-Level Systems
+
+`GameOutcome(winner, kind, reason)` represents a terminal result.
+
+Base hooks:
+
+- `WinCondition.evaluate(game) -> GameOutcome | None`
+- `PhaseSystem.can_move(game, piece, move) -> bool`
+- `PhaseSystem.after_move(game, piece, move) -> None`
+- `PhaseSystem.current_phase`
+- `ResourceSystem.can_move(game, piece, move) -> bool`
+- `ResourceSystem.after_move(game, piece, move) -> None`
+- `ScoringSystem.get_scores(game) -> Mapping[Side2, int]`
+
+`PhaseSystem`, `ResourceSystem`, and `ScoringSystem` also support:
+
+- `reset()`
+- `snapshot()`
+- `restore(snapshot)`
+
+Built-in win conditions:
+
+- `EliminatePieceCondition(piece_symbol, side=None, winner=None, kind="win", reason=None)`
+- `ReachSquareCondition(side, target, piece_symbol=None, winner=None, kind="win", reason=None)`
+- `NoLegalMovesCondition(side=None, winner=None, kind="win", reason=None)`
+- `MoveLimitDrawCondition(move_limit, kind="draw", winner=None, reason=None)`
+- `RoyalCheckmateCondition(royal_rules, kind="win", reason=None)`
+- `RoyalStalemateCondition(royal_rules, kind="draw", winner=None, reason=None)`
+
+Royal-safety helpers:
+
+- `RoyalRuleset(royal_symbol)`
+- `RoyalSafetyMoveManager`
+- `BoardSimulation`
+
+Typical use:
+
+- make a `RoyalRuleset` subclass that knows how to detect attacks
+- make your manager inherit `RoyalSafetyMoveManager`
+- use `RoyalCheckmateCondition` / `RoyalStalemateCondition` as win conditions
+
+Built-in phase systems:
+
+- `StaticPhaseSystem(phase="main")`
+- `TurnCountPhaseSystem(schedule, initial_phase="opening")`
+- `TwoStagePhaseSystem(switch_after_moves, opening_phase="opening", later_phase="battle")`
+
+Built-in resource systems:
+
+- `ActionPointSystem(points_per_turn=1, starting_side=True)`
+
+Built-in scoring systems:
+
+- `PieceCountScoringSystem()`
+- `MaterialScoreSystem(piece_values, default_value=0)`
 
 ## MoveManager
 

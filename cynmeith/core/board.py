@@ -46,6 +46,7 @@ class Board:
 
         self.manager = move_manager(self)
         self.history = move_history(self)
+        self._state_listener: Callable[[], None] | None = None
 
         self._init_pieces()
         self.history.seed_current_state()
@@ -295,6 +296,7 @@ class Board:
         self.clear()
         self._init_pieces()
         self.history.seed_current_state()
+        self._notify_state_listener()
 
     def clear(self) -> None:
         """
@@ -302,6 +304,17 @@ class Board:
         """
         self.board = [[None for _ in range(self.width)] for _ in range(self.height)]
         self.history.clear()
+        self._notify_state_listener()
+
+    def set_state_listener(self, listener: Callable[[], None] | None) -> None:
+        """
+        Register a callback invoked when public board reseeding operations occur.
+        """
+        self._state_listener = listener
+
+    def _notify_state_listener(self) -> None:
+        if self._state_listener is not None:
+            self._state_listener()
 
     def at(self, position: Coord) -> Piece | None:
         """
@@ -321,6 +334,7 @@ class Board:
         """
         self._set_at(position, piece)
         self.history.seed_current_state()
+        self._notify_state_listener()
 
     def _set_at(self, position: Coord, piece: Piece | None) -> None:
         """

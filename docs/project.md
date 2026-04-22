@@ -71,6 +71,7 @@ tool before the rules model is ready.
 
 - clear separation between state, rules, and turn flow
 - practical extension points through `Piece`, `MoveManager`, and `TurnPolicy`
+- first-class hooks for win conditions, phases, resources, and scoring
 - snapshot-based undo/redo for prototyping
 - working chess and xiangqi examples
 - small enough codebase to understand without weeks of onboarding
@@ -79,7 +80,7 @@ tool before the rules model is ready.
 
 - game authoring is still mostly code-driven
 - core assumptions are still strongest for two-sided games
-- win conditions, phases, scoring, and resources are not first-class yet
+- win conditions, phases, scoring, and resources are first-class hooks, but built-in presets are still minimal
 - snapshot history is convenient but not designed for high-performance play
 
 ## Recommended Way To Use CynMeith
@@ -97,4 +98,3 @@ tool before the rules model is ready.
 - Want to build a prototype game: [Your First Custom Game](first-game.md)
 - Need engine internals: [Architecture](architecture.md)
 - Need API details: [API Reference](api.md)
-

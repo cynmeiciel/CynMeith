@@ -13,13 +13,14 @@ The current strengths are:
 - custom move resolution
 - irregular side effects
 - configurable turn flow
+- first-class hooks for win conditions, phases, resources, and scoring
 - snapshot undo/redo
 
 ## Near-Term Priorities
 
-The next major engine goals are to make whole-game structure more first-class.
+The next major engine goals are to make those new hooks genuinely convenient.
 
-### 1. Win Conditions
+### 1. More Built-In Win Conditions
 
 Examples:
 
@@ -28,9 +29,9 @@ Examples:
 - reach a target square
 - survive a fixed number of turns
 
-This should become a dedicated engine concept instead of ad-hoc manager logic.
+The first built-ins now exist. The next step is broadening that library.
 
-### 2. Phase Systems
+### 2. More Built-In Phase Systems
 
 Examples:
 
@@ -38,10 +39,10 @@ Examples:
 - draft phase, then battle phase
 - turn-count-driven rule changes
 
-These rules do not belong naturally in a piece class, and they deserve their
-own structure.
+The first built-ins now exist. The next step is adding more reusable phase
+systems for setup/battle, draft/battle, and other prototype patterns.
 
-### 3. Scoring Systems
+### 3. More Built-In Scoring Systems
 
 Examples:
 
@@ -50,9 +51,10 @@ Examples:
 - checkpoint score
 - round-end points
 
-Scoring matters for prototype games that are not pure elimination games.
+Scoring hooks and a first built-in set now exist. The next step is territory,
+checkpoint, and round-based scoring helpers.
 
-### 4. Resource Systems
+### 4. More Built-In Resource Systems
 
 Examples:
 
@@ -61,7 +63,8 @@ Examples:
 - summon charges
 - per-turn skill budgets
 
-These systems open up a much wider class of prototype games.
+Resource hooks and a first built-in set now exist. The next step is richer
+systems such as mana pools, charge systems, and custom refresh policies.
 
 ## Later Priorities
 
@@ -100,4 +103,3 @@ an excuse to weaken the engine's internal design.
 - core rules should stay explicit and debuggable
 - engine abstractions should serve prototyping first
 - performance work should follow clarity, not replace it
-

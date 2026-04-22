@@ -1,4 +1,4 @@
-from cynmeith import MoveManager
+from cynmeith import MoveManager, RoyalSafetyMoveManager
 from cynmeith.core.move_effects import EffectPresets, PromotePieceEffect
 from cynmeith.core.piece import Piece
 from cynmeith.utils import Coord, InvalidMoveError, Move
@@ -6,9 +6,14 @@ from cynmeith.utils import Coord, InvalidMoveError, Move
 from .king import King
 from .pawn import Pawn
 from .rook import Rook
+from .royal_rules import CHESS_ROYAL_RULES
 
 
-class ChessManager(MoveManager):
+class ChessManager(RoyalSafetyMoveManager):
+    @property
+    def royal_rules(self):
+        return CHESS_ROYAL_RULES
+
     def resolve_move(self, move: Move) -> Move | None:
         piece = self.board.at(move.start)
         if piece is None:
@@ -18,22 +23,32 @@ class ChessManager(MoveManager):
         if isinstance(piece, King):
             castling_move = self._resolve_castling(piece, move)
             if castling_move is not None:
-                return castling_move
+                if self._is_royal_safe_after_move(castling_move, piece.side):
+                    return castling_move
+                return None
 
         if self.board.is_allied(move.end, piece.side):
+            return None
+        if self._targets_enemy_royal(move, piece.side):
             return None
 
         extra = self._build_extra_info(move)
 
         if isinstance(piece, Pawn) and self._is_valid_en_passant(piece, move):
             capture_position = Coord(move.start.r, move.end.c)
-            return self._with_effects(
+            resolved_move = self._with_effects(
                 move,
                 EffectPresets.capture(capture_position),
                 extra,
             )
+            if self._is_royal_safe_after_move(resolved_move, piece.side):
+                return resolved_move
+            return None
 
         if not piece.is_valid_move(new_position, self.board):
+            return None
+
+        if not self._is_royal_safe_after_move(move, piece.side):
             return None
 
         return move
@@ -107,14 +122,14 @@ class ChessManager(MoveManager):
             return None
 
         enemy_side = not king.side
-        if self._is_square_attacked(move.start, enemy_side):
+        if self.royal_rules.is_square_attacked(self.board, move.start, enemy_side):
             return None
 
         mid_square = Coord(move.start.r, move.start.c + direction)
-        if self._is_square_attacked(mid_square, enemy_side):
+        if self.royal_rules.is_square_attacked(self.board, mid_square, enemy_side):
             return None
 
-        if self._is_square_attacked(move.end, enemy_side):
+        if self.royal_rules.is_square_attacked(self.board, move.end, enemy_side):
             return None
 
         extra = self._build_extra_info(move)
@@ -124,29 +139,6 @@ class ChessManager(MoveManager):
             EffectPresets.relocate(rook_position, rook_to),
             extra,
         )
-
-    def _is_square_attacked(self, target: Coord, by_side: bool) -> bool:
-        for position, piece in self.board.iter_enumerate():
-            if piece is None or piece.side != by_side:
-                continue
-
-            if isinstance(piece, Pawn):
-                dr = target.r - position.r
-                dc = target.c - position.c
-                expected = 1 if piece.side else -1
-                if dr == expected and abs(dc) == 1:
-                    return True
-                continue
-
-            if isinstance(piece, King):
-                if piece.position.is_adjacent(target):
-                    return True
-                continue
-
-            if piece.is_valid_move(target, self.board):
-                return True
-
-        return False
 
     def _with_effects(self, move: Move, effects: list, extra: dict) -> Move:
         merged = dict(extra)

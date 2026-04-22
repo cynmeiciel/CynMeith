@@ -24,12 +24,23 @@ The UI modules in `examples/ui` are intentionally generic:
 
 This split lets each game provide only configuration and rule objects.
 
+The Tk UI now also reflects game-level systems when present:
+
+- current turn
+- current phase
+- score summaries
+- terminal outcome/winner messages
+
 ## Chess Example
 
 The chess stack uses:
 
 - `QuotaTurnPolicy(moves_per_turn=1)` for standard one-move turns
 - `ChessManager` for irregular moves
+- `RoyalSafetyMoveManager` + `ChessRoyalRules` to reject self-check and king capture
+- built-in `RoyalCheckmateCondition` for checkmate
+- built-in `RoyalStalemateCondition` for stalemate draws
+- built-in `MaterialScoreSystem` for material totals
 - piece classes in `examples/chess`
 
 Special rules currently implemented:
@@ -37,6 +48,8 @@ Special rules currently implemented:
 - en passant
 - promotion via explicit user input (`extra_info["promotion"]`)
 - castling (including attacked-square checks)
+- king safety on all legal moves
+- real checkmate/stalemate end conditions
 
 Promotion flow in chess example:
 
@@ -50,6 +63,10 @@ The xiangqi stack uses:
 
 - `QuotaTurnPolicy(moves_per_turn=1)` for standard one-move turns
 - `XiangqiManager` for general-facing rule
+- `RoyalSafetyMoveManager` + `XiangqiRoyalRules` to reject exposed generals and general capture
+- built-in `RoyalCheckmateCondition` for checkmate
+- built-in `RoyalStalemateCondition(kind="win")` for stalemate loss
+- built-in `MaterialScoreSystem` for material totals
 - piece classes in `examples/xiangqi`
 
 The xiangqi UI spec also enables river rendering.

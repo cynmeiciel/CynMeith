@@ -1,7 +1,12 @@
 # CynMeith 
 **/'siːn.meɪt/**, by the way
 
-CynMeith is a modular board-game engine for building turn-based games with custom movement rules, side effects, and turn policies.
+CynMeith is a modular board-game engine for building turn-based games with custom movement rules, side effects, turn policies, win conditions, phases, scoring, and resource systems.
+
+It now includes built-in presets for common game-level patterns such as
+piece-elimination wins, reach-square wins, move-limit draws, turn-count phase
+changes, action points, piece-count scoring, material scoring, and
+royal-safety/checkmate-style games.
 
 Current release: 1.0.0
 

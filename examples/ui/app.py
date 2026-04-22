@@ -43,6 +43,7 @@ class TkGameApp(tk.Tk):
         self.bind("<Control-r>", lambda _event: self.reset_board())
 
         self.refresh()
+        self.set_status(spec.status_hint)
 
     def refresh(self) -> None:
         self.board_canvas.render(self.selected_piece, self.valid_moves)
@@ -54,39 +55,43 @@ class TkGameApp(tk.Tk):
     def reset_board(self) -> None:
         self.game.reset()
         self.clear_selection()
-        self.status_bar.set("Board reset.")
+        self.set_status("Board reset.")
         self.refresh()
 
     def undo_move(self) -> None:
         try:
             self.game.undo_move()
         except MoveHistoryError as exc:
-            self.status_bar.set(str(exc))
+            self.set_status(str(exc))
             return
         self.clear_selection()
-        self.status_bar.set("Move undone.")
+        self.set_status("Move undone.")
         self.refresh()
 
     def redo_move(self) -> None:
         try:
             self.game.redo_move()
         except MoveHistoryError as exc:
-            self.status_bar.set(str(exc))
+            self.set_status(str(exc))
             return
         self.clear_selection()
-        self.status_bar.set("Move redone.")
+        self.set_status("Move redone.")
         self.refresh()
 
     def select_piece(self, position: Coord) -> None:
+        if self.game.is_over:
+            self.clear_selection()
+            self.set_status("Game is over.")
+            return
         piece = self.board.at(position)
         if piece is None:
             self.clear_selection()
-            self.status_bar.set("Empty square.")
+            self.set_status("Empty square.")
             return
 
         self.selected_piece = piece
         self.valid_moves = self.game.get_valid_moves(piece) or []
-        self.status_bar.set(f"Selected {piece.__class__.__name__} at {piece.position}.")
+        self.set_status(f"Selected {piece.__class__.__name__} at {piece.position}.")
 
     def move_selected_piece(self, position: Coord) -> None:
         if self.selected_piece is None:
@@ -96,7 +101,7 @@ class TkGameApp(tk.Tk):
         if self._needs_promotion(position):
             promotion_symbol = self._prompt_promotion_symbol()
             if promotion_symbol is None:
-                self.status_bar.set("Promotion cancelled.")
+                self.set_status("Promotion cancelled.")
                 self.clear_selection()
                 return
             move_type = "PROMOTE"
@@ -106,9 +111,9 @@ class TkGameApp(tk.Tk):
                 self.selected_piece.position, position, move_type, extra_info
             )
         except InvalidMoveError as exc:
-            self.status_bar.set(str(exc))
+            self.set_status(str(exc))
         else:
-            self.status_bar.set(f"Moved to {position}.")
+            self.set_status(f"Moved to {position}.")
         self.clear_selection()
 
     def _needs_promotion(self, position: Coord) -> bool:
@@ -136,7 +141,7 @@ class TkGameApp(tk.Tk):
 
         symbol = response.strip().upper()
         if symbol not in self.spec.promotion_choices:
-            self.status_bar.set(f"Invalid promotion piece: {response}")
+            self.set_status(f"Invalid promotion piece: {response}")
             return None
 
         return symbol
@@ -154,8 +159,39 @@ class TkGameApp(tk.Tk):
             self.move_selected_piece(position)
         elif clicked_piece is None:
             self.clear_selection()
-            self.status_bar.set("Selection cleared.")
+            self.set_status("Selection cleared.")
         else:
             self.select_piece(position)
 
         self.refresh()
+
+    def set_status(self, message: str) -> None:
+        summary = self._build_status_summary()
+        text = f"{message} | {summary}" if summary else message
+        self.status_bar.set(text)
+
+    @staticmethod
+    def _format_side(side: bool) -> str:
+        return "First" if side else "Second"
+
+    def _build_status_summary(self) -> str:
+        scores = self.game.get_scores()
+        parts: list[str] = []
+
+        if self.game.outcome is not None:
+            outcome = self.game.outcome
+            if outcome.winner is None:
+                parts.append(f"Draw: {outcome.reason}")
+            else:
+                winner = self._format_side(outcome.winner)
+                parts.append(f"Winner: {winner} ({outcome.reason})")
+        else:
+            if self.game.current_side is not None:
+                parts.append(f"Turn: {self._format_side(self.game.current_side)}")
+            if self.game.current_phase is not None:
+                parts.append(f"Phase: {self.game.current_phase}")
+
+        if scores is not None:
+            parts.append(f"Score F/S: {scores[True]}/{scores[False]}")
+
+        return " | ".join(parts)

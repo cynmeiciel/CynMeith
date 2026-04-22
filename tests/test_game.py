@@ -1,9 +1,21 @@
-from cynmeith import Config, Game, QuotaTurnPolicy
+import pytest
+
+from cynmeith import (
+    Config,
+    FreeTurnPolicy,
+    Game,
+    GameOutcome,
+    PhaseSystem,
+    QuotaTurnPolicy,
+    ResourceSystem,
+    ScoringSystem,
+    WinCondition,
+)
 from cynmeith.core.move_effects import EffectPresets
 from cynmeith.core.move_manager import MoveManager
 from cynmeith.core.piece import Piece
 from cynmeith.utils import Coord
-from cynmeith.utils.aliases import Move
+from cynmeith.utils.aliases import InvalidMoveError, Move
 from examples.chess.chess_manager import ChessManager
 from examples.xiangqi.game import build_game_spec as build_xiangqi_spec
 
@@ -192,6 +204,94 @@ class StrikeManager(MoveManager):
         return Move(move.start, move.end, move.move_type, extra)
 
 
+class ReachRowWinCondition(WinCondition):
+    def __init__(self, side: bool, row: int) -> None:
+        self.side = side
+        self.row = row
+
+    def evaluate(self, game: Game) -> GameOutcome | None:
+        for piece in game.board.iter_pieces():
+            if piece is None:
+                continue
+            if piece.side == self.side and piece.position.r == self.row:
+                return GameOutcome(
+                    self.side, "win", f"Side {self.side} reached row {self.row}"
+                )
+        return None
+
+
+class OpeningOnlyFirstRankPhaseSystem(PhaseSystem):
+    def __init__(self) -> None:
+        self.phase = "opening"
+
+    def can_move(self, game: Game, piece: Piece, move: Move) -> bool:
+        if self.phase == "opening":
+            return move.start.r == 0
+        return True
+
+    def after_move(self, game: Game, piece: Piece, move: Move) -> None:
+        self.phase = "battle"
+
+    def reset(self) -> None:
+        self.phase = "opening"
+
+    def snapshot(self) -> str:
+        return self.phase
+
+    def restore(self, snapshot: str) -> None:
+        self.phase = snapshot
+
+    @property
+    def current_phase(self) -> str:
+        return self.phase
+
+
+class SingleChargeResourceSystem(ResourceSystem):
+    def __init__(self, starting_charges: int = 1) -> None:
+        self.starting_charges = starting_charges
+        self.charges = {True: starting_charges, False: starting_charges}
+
+    def can_move(self, game: Game, piece: Piece, move: Move) -> bool:
+        return self.charges[piece.side] > 0
+
+    def after_move(self, game: Game, piece: Piece, move: Move) -> None:
+        self.charges[piece.side] -= 1
+
+    def reset(self) -> None:
+        self.charges = {True: self.starting_charges, False: self.starting_charges}
+
+    def snapshot(self) -> dict[bool, int]:
+        return dict(self.charges)
+
+    def restore(self, snapshot: dict[bool, int]) -> None:
+        self.charges = dict(snapshot)
+
+
+class PieceCountScoringSystem(ScoringSystem):
+    def reset(self) -> None:
+        return None
+
+    def snapshot(self) -> None:
+        return None
+
+    def restore(self, snapshot: None) -> None:
+        return None
+
+    def get_scores(self, game: Game) -> dict[bool, int]:
+        return {
+            True: sum(
+                1
+                for piece in game.board.iter_pieces()
+                if piece is not None and piece.side
+            ),
+            False: sum(
+                1
+                for piece in game.board.iter_pieces()
+                if piece is not None and not piece.side
+            ),
+        }
+
+
 def test_game_supports_stationary_skill_move_with_side_effect() -> None:
     config = Config.from_data(
         {
@@ -221,6 +321,152 @@ def test_game_supports_stationary_skill_move_with_side_effect() -> None:
     assert game.board.history.num_moves == 1
     assert len(game.board.history.move_stack) == 1
     assert len(game.board.history.state_stack) == 2
+
+
+def test_game_tracks_outcome_and_restores_it_on_undo_redo() -> None:
+    game = Game(
+        Config.from_data(make_empty_chess_config_data()),
+        move_manager=ChessManager,
+        turn_policy=FreeTurnPolicy(),
+        win_conditions=[ReachRowWinCondition(True, 7)],
+    )
+
+    rook = game.board.factory.create_piece("R", Coord(6, 0))
+    game.board.set_at(Coord(6, 0), rook)
+
+    assert game.outcome is None
+    assert not game.is_over
+
+    game.move(Coord(6, 0), Coord(7, 0))
+
+    assert game.outcome == GameOutcome(True, "win", "Side True reached row 7")
+    assert game.is_over
+    assert not game.can_move(Coord(7, 0), Coord(7, 1))
+
+    with pytest.raises(InvalidMoveError, match="already over"):
+        game.move(Coord(7, 0), Coord(7, 1))
+
+    game.undo_move()
+    assert game.outcome is None
+    assert not game.is_over
+
+    game.redo_move()
+    assert game.outcome == GameOutcome(True, "win", "Side True reached row 7")
+    assert game.is_over
+
+
+def test_game_phase_system_restricts_moves_and_restores_on_undo_redo() -> None:
+    game = Game(
+        Config.from_data(make_empty_chess_config_data()),
+        move_manager=ChessManager,
+        turn_policy=FreeTurnPolicy(),
+        phase_system=OpeningOnlyFirstRankPhaseSystem(),
+    )
+
+    rook = game.board.factory.create_piece("R", Coord(0, 0))
+    pawn = game.board.factory.create_piece("P", Coord(1, 1))
+    game.board.set_at(Coord(0, 0), rook)
+    game.board.set_at(Coord(1, 1), pawn)
+
+    assert game.current_phase == "opening"
+    assert game.can_move(Coord(0, 0), Coord(0, 2))
+    assert not game.can_move(Coord(1, 1), Coord(2, 1))
+
+    game.move(Coord(0, 0), Coord(0, 2))
+    assert game.current_phase == "battle"
+    assert game.can_move(Coord(1, 1), Coord(2, 1))
+
+    game.undo_move()
+    assert game.current_phase == "opening"
+    assert not game.can_move(Coord(1, 1), Coord(2, 1))
+
+    game.redo_move()
+    assert game.current_phase == "battle"
+
+
+def test_game_resource_system_blocks_spent_side_and_restores_on_undo() -> None:
+    resource_system = SingleChargeResourceSystem(starting_charges=1)
+    game = Game(
+        Config.from_data(make_empty_chess_config_data()),
+        move_manager=ChessManager,
+        turn_policy=FreeTurnPolicy(),
+        resource_system=resource_system,
+    )
+
+    rook = game.board.factory.create_piece("R", Coord(0, 0))
+    game.board.set_at(Coord(0, 0), rook)
+
+    assert game.can_move(Coord(0, 0), Coord(0, 2))
+    game.move(Coord(0, 0), Coord(0, 2))
+
+    assert resource_system.charges[True] == 0
+    assert not game.can_move(Coord(0, 2), Coord(0, 3))
+
+    game.undo_move()
+    assert resource_system.charges[True] == 1
+    assert game.can_move(Coord(0, 0), Coord(0, 2))
+
+
+def test_game_scoring_system_reports_scores_from_current_state() -> None:
+    game = Game(
+        Config.from_data(
+            {
+                "pieces": {
+                    "StrikePiece": {
+                        "symbol": "S",
+                        "class_path": "tests.test_game",
+                    }
+                },
+                "width": 3,
+                "height": 3,
+                "fen": "!",
+            }
+        ),
+        move_manager=StrikeManager,
+        scoring_system=PieceCountScoringSystem(),
+    )
+
+    actor = game.board.factory.create_piece("S", Coord(1, 1))
+    target = game.board.factory.create_piece("s", Coord(1, 2))
+    game.board.set_at(Coord(1, 1), actor)
+    game.board.set_at(Coord(1, 2), target)
+
+    assert game.get_scores() == {True: 1, False: 1}
+
+    game.move(Coord(1, 1), Coord(1, 1), extra_info={"target": Coord(1, 2)})
+    assert game.get_scores() == {True: 1, False: 0}
+
+    game.undo_move()
+    assert game.get_scores() == {True: 1, False: 1}
+
+
+def test_manual_board_setup_reseeds_game_level_state() -> None:
+    phase_system = OpeningOnlyFirstRankPhaseSystem()
+    resource_system = SingleChargeResourceSystem(starting_charges=1)
+    game = Game(
+        Config.from_data(make_empty_chess_config_data()),
+        move_manager=ChessManager,
+        turn_policy=QuotaTurnPolicy(moves_per_turn=1, starting_side=False),
+        phase_system=phase_system,
+        resource_system=resource_system,
+        win_conditions=[ReachRowWinCondition(True, 7)],
+    )
+
+    rook = game.board.factory.create_piece("R", Coord(0, 0))
+    game.board.set_at(Coord(0, 0), rook)
+
+    assert game.current_side is False
+    assert game.current_phase == "opening"
+    assert resource_system.charges == {True: 1, False: 1}
+    assert game.outcome is None
+
+    winning_rook = game.board.factory.create_piece("R", Coord(7, 0))
+    game.board.set_at(Coord(7, 0), winning_rook)
+
+    assert game.current_side is False
+    assert game.current_phase == "opening"
+    assert resource_system.charges == {True: 1, False: 1}
+    assert game.outcome == GameOutcome(True, "win", "Side True reached row 7")
 
 
 def test_xiangqi_example_uses_standard_turn_order() -> None:
