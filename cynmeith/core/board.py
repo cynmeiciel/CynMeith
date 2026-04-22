@@ -359,7 +359,6 @@ class Board:
         self.set_at(move.start, None)
         self.set_at(move.end, piece)
         piece.move(move.end)
-        self.history.record_move(move)
 
     def get_valid_moves(self, piece: Piece | None) -> list[Coord] | None:
         """

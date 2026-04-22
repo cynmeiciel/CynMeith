@@ -1,6 +1,6 @@
 [project]
 name = "cynmeith"
-version = "0.1.0"
+version = "1.0.0"
 description = "CynMeith - A flexible and extensible framework for simulating and playing board games."
 authors = [
     {name = "cynmeiciel",email = "eplmr123duy@gmail.com"}

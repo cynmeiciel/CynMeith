@@ -23,4 +23,6 @@ def build_game_spec() -> GameSpec:
             piece_color_false="#7f1d1d",
         ),
         status_hint="Chess standard mode: one move per turn.",
+        promotion_choices=("Q", "R", "B", "N"),
+        promotion_prompt="Choose promotion piece",
     )

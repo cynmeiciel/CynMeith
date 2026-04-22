@@ -4,8 +4,6 @@ from cynmeith.utils import Coord
 
 class Elephant(Piece):
     def is_valid_move(self, new_position: Coord, board: Board) -> bool:
-        if not board.is_in_bounds(new_position):
-            return False
         if not self.position.is_diagonal(new_position):
             return False
         if self.position.chebyshev_to(new_position) != 2:
@@ -21,3 +19,15 @@ class Elephant(Piece):
             (self.position.c + new_position.c) // 2,
         )
         return board.is_empty(middle)
+
+    def iter_move_candidates(self, board: Board):
+        deltas = (
+            Coord(-2, -2),
+            Coord(-2, 2),
+            Coord(2, -2),
+            Coord(2, 2),
+        )
+        for delta in deltas:
+            position = self.position + delta
+            if board.is_in_bounds(position):
+                yield position

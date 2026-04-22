@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import simpledialog
 
 from cynmeith import Game
 from cynmeith.core.piece import Piece
@@ -90,13 +91,55 @@ class TkGameApp(tk.Tk):
     def move_selected_piece(self, position: Coord) -> None:
         if self.selected_piece is None:
             return
+        move_type = ""
+        extra_info: dict[str, object] | None = None
+        if self._needs_promotion(position):
+            promotion_symbol = self._prompt_promotion_symbol()
+            if promotion_symbol is None:
+                self.status_bar.set("Promotion cancelled.")
+                self.clear_selection()
+                return
+            move_type = "PROMOTE"
+            extra_info = {"promotion": promotion_symbol}
         try:
-            self.game.move(self.selected_piece.position, position)
+            self.game.move(
+                self.selected_piece.position, position, move_type, extra_info
+            )
         except InvalidMoveError as exc:
             self.status_bar.set(str(exc))
         else:
             self.status_bar.set(f"Moved to {position}.")
         self.clear_selection()
+
+    def _needs_promotion(self, position: Coord) -> bool:
+        if self.selected_piece is None:
+            return False
+        if self.selected_piece.__class__.__name__ != "Pawn":
+            return False
+        if not self.spec.promotion_choices:
+            return False
+        if self.selected_piece.side:
+            return position.r == self.board.height - 1
+        return position.r == 0
+
+    def _prompt_promotion_symbol(self) -> str | None:
+        if not self.spec.promotion_choices:
+            return None
+
+        response = simpledialog.askstring(
+            "Promotion",
+            f"{self.spec.promotion_prompt} ({'/'.join(self.spec.promotion_choices)})",
+            parent=self,
+        )
+        if response is None:
+            return None
+
+        symbol = response.strip().upper()
+        if symbol not in self.spec.promotion_choices:
+            self.status_bar.set(f"Invalid promotion piece: {response}")
+            return None
+
+        return symbol
 
     def on_click(self, event: tk.Event) -> None:
         position = self.board_canvas.position_from_event(event)

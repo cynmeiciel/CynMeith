@@ -7,20 +7,23 @@ from .general import General
 
 
 class XiangqiManager(MoveManager):
-    def validate_move(self, move: Move) -> bool:
+    def resolve_move(self, move: Move) -> Move | None:
         piece = self.board.at(move.start)
         if piece is None:
-            return False
+            return None
         if self.board.is_allied(move.end, piece.side):
-            return False
+            return None
 
         simulated_board = deepcopy(self.board.board)
         simulated_board[move.start.r][move.start.c] = None
         simulated_board[move.end.r][move.end.c] = piece
         if self._generals_face(simulated_board):
-            return False
+            return None
 
-        return piece.is_valid_move(move.end, self.board)
+        if not piece.is_valid_move(move.end, self.board):
+            return None
+
+        return move
 
     def _generals_face(self, board_state: list[list[object | None]]) -> bool:
         generals: dict[bool, tuple[int, int]] = {}

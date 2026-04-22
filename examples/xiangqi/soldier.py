@@ -24,3 +24,12 @@ class Soldier(Piece):
         if crossed_river(self.position, self.side) and dr == 0 and abs(dc) == 1:
             return True
         return False
+
+    def iter_move_candidates(self, board: Board):
+        deltas = [Coord(1, 0) if self.side else Coord(-1, 0)]
+        if crossed_river(self.position, self.side):
+            deltas.extend([Coord(0, -1), Coord(0, 1)])
+        for delta in deltas:
+            position = self.position + delta
+            if board.is_in_bounds(position):
+                yield position

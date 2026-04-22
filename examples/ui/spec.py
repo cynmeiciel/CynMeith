@@ -23,3 +23,5 @@ class GameSpec:
     theme: BoardTheme
     show_river: bool = False
     status_hint: str = "Click a piece to select it."
+    promotion_choices: tuple[str, ...] = ()
+    promotion_prompt: str = "Choose promotion piece"

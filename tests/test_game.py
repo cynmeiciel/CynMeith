@@ -77,7 +77,7 @@ def test_game_supports_en_passant() -> None:
     assert game.board.at(Coord(5, 5)).get_symbol_with_side() == "P"
 
 
-def test_game_supports_default_promotion_to_queen() -> None:
+def test_game_supports_explicit_promotion_to_queen() -> None:
     game = Game(
         Config.from_data(make_empty_chess_config_data()), move_manager=ChessManager
     )
@@ -85,7 +85,7 @@ def test_game_supports_default_promotion_to_queen() -> None:
     pawn = game.board.factory.create_piece("P", Coord(6, 0))
     game.board.set_at(Coord(6, 0), pawn)
 
-    game.move(Coord(6, 0), Coord(7, 0))
+    game.move(Coord(6, 0), Coord(7, 0), extra_info={"promotion": "Q"})
     assert game.board.at(Coord(7, 0)).get_symbol_with_side() == "Q"
 
 

@@ -4,8 +4,15 @@ from cynmeith.utils import Coord
 
 class Chariot(Piece):
     def is_valid_move(self, new_position: Coord, board: Board) -> bool:
-        if not board.is_in_bounds(new_position):
-            return False
         return self.position.is_orthogonal(new_position) and board.is_empty_line(
             self.position, new_position, Coord.is_orthogonal
         )
+
+    def iter_move_candidates(self, board: Board):
+        for direction in (Coord.up(), Coord.down(), Coord.left(), Coord.right()):
+            for position in board.iter_positions_towards(
+                self.position + direction, direction
+            ):
+                yield position
+                if board.at(position) is not None:
+                    break

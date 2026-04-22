@@ -1,6 +1,7 @@
 from cynmeith import MoveManager
-from cynmeith.core.move_effects import EffectPresets
-from cynmeith.utils import Coord, Move
+from cynmeith.core.move_effects import EffectPresets, PromotePieceEffect
+from cynmeith.core.piece import Piece
+from cynmeith.utils import Coord, InvalidMoveError, Move
 
 from .king import King
 from .pawn import Pawn
@@ -35,15 +36,25 @@ class ChessManager(MoveManager):
         if not piece.is_valid_move(new_position, self.board):
             return None
 
-        if isinstance(piece, Pawn) and self._is_promotion_rank(piece, move.end):
-            promotion_symbol = str(extra.get("promotion", "Q"))
-            return self._with_effects(
-                move,
-                EffectPresets.promote(promotion_symbol),
-                extra,
-            )
-
         return move
+
+    def apply_move(self, move: Move, piece: Piece) -> None:
+        if isinstance(piece, Pawn) and self._is_promotion_rank(piece, move.end):
+            extra = self._build_extra_info(move)
+            promotion_symbol = extra.get("promotion")
+            if not isinstance(promotion_symbol, str) or not promotion_symbol.strip():
+                raise InvalidMoveError("Promotion piece must be specified.")
+
+            merged = dict(extra)
+            merged_effects = []
+            effects = merged.get("effects")
+            if isinstance(effects, list):
+                merged_effects.extend(effects)
+            merged_effects.append(PromotePieceEffect(promotion_symbol))
+            merged["effects"] = merged_effects
+            move = Move(move.start, move.end, move.move_type, merged)
+
+        super().apply_move(move, piece)
 
     def _is_valid_en_passant(self, piece: Pawn, move: Move) -> bool:
         dr = move.end.r - move.start.r

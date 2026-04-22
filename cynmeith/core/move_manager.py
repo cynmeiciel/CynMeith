@@ -58,6 +58,8 @@ class MoveManager:
         for effect in effects:
             effect.apply(self.board, move, piece)
 
+        self.board.history.record_move(move)
+
     @staticmethod
     def _build_extra_info(move: Move) -> MoveExtraInfo:
         if isinstance(move.extra_info, dict):
@@ -69,21 +71,7 @@ class MoveManager:
         effects = extra.get("effects")
         if isinstance(effects, list):
             return [effect for effect in effects if isinstance(effect, MoveEffect)]
-
-        # Backward compatibility for older custom managers.
-        legacy: list[MoveEffect] = []
-        capture = extra.get("capture")
-        if isinstance(capture, Coord):
-            from cynmeith.core.move_effects import RemovePieceEffect
-
-            legacy.append(RemovePieceEffect(capture))
-        elif isinstance(capture, list):
-            from cynmeith.core.move_effects import RemovePieceEffect
-
-            for position in capture:
-                if isinstance(position, Coord):
-                    legacy.append(RemovePieceEffect(position))
-        return legacy
+        return []
 
     def get_validated_moves(self, piece: Piece) -> list[Coord]:
         """

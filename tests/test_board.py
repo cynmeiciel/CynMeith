@@ -5,8 +5,8 @@ from cynmeith.utils import Coord, InvalidMoveError, PieceError
 
 
 class RejectAllMoveManager(MoveManager):
-    def validate_move(self, move):
-        return False
+    def resolve_move(self, move):
+        return None
 
 
 def test_board_init(board):

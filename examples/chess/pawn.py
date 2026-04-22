@@ -30,6 +30,26 @@ class Pawn(Piece):
 
         return False
 
+    def iter_move_candidates(self, board: Board):
+        direction = Coord.down() if self.side else Coord.up()
+        one_step = self.position + direction
+        if board.is_in_bounds(one_step):
+            yield one_step
+
+        if self.distance > 1:
+            two_step = one_step + direction
+            if board.is_in_bounds(two_step):
+                yield two_step
+
+        diagonal_offsets = (
+            Coord(direction.r, -1),
+            Coord(direction.r, 1),
+        )
+        for offset in diagonal_offsets:
+            position = self.position + offset
+            if board.is_in_bounds(position):
+                yield position
+
     def move(self, new_position: Coord):
         self.position = new_position
         self.distance = 1

@@ -169,7 +169,8 @@ class Game:
         move = Move(start, end, move_type, extra_info)
         if not self.turn_policy.can_move(self, piece, move):
             return False
-        return self.board.manager.resolve_move(move) is not None
+        resolved_move = self.board.manager.resolve_move(move)
+        return resolved_move is not None
 
     def move(
         self,
