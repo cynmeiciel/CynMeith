@@ -1,4 +1,5 @@
 from cynmeith import RoyalRuleset
+from cynmeith.core.board import Board
 from cynmeith.utils import Coord
 
 from .general import General
@@ -8,7 +9,7 @@ class XiangqiRoyalRules(RoyalRuleset):
     def __init__(self) -> None:
         super().__init__("G")
 
-    def is_square_attacked(self, board, target: Coord, by_side: bool) -> bool:
+    def is_square_attacked(self, board: Board, target: Coord, by_side: bool) -> bool:
         for position, piece in board.iter_enumerate():
             if piece is None or piece.side != by_side:
                 continue

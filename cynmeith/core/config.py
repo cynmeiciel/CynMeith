@@ -97,7 +97,11 @@ class Config:
         return cls(config_path)
 
     def get_piece_path(self, piece: PieceName) -> str:
-        return self.pieces[piece].get("class_path", piece.lower())
+        value = self.pieces[piece].get("class_path", piece.lower())
+        assert isinstance(value, str)
+        return value
 
     def get_piece_symbol(self, piece: PieceName) -> str:
-        return self.pieces[piece].get("symbol", piece[0].upper())
+        value = self.pieces[piece].get("symbol", piece[0].upper())
+        assert isinstance(value, str)
+        return value

@@ -1,10 +1,12 @@
-from typing import Callable, Iterable
+from collections.abc import Iterable
+from copy import deepcopy
+from typing import Callable, Iterable, Protocol
 
 from cynmeith.core.config import Config
 from cynmeith.core.move_history import MoveHistory
 from cynmeith.core.move_manager import MoveManager
 from cynmeith.core.piece import Piece
-from cynmeith.core.piece_factory import PieceFactory
+from cynmeith.core.piece_factory import PieceFactory, PieceFactoryLike
 from cynmeith.utils.aliases import (
     InvalidMoveError,
     Move,
@@ -463,3 +465,112 @@ class Board:
         Check if a position contains an allied piece.
         """
         return self.side_at(position) == side
+
+
+class BoardLike(Protocol):
+    @property
+    def factory(self) -> PieceFactoryLike: ...
+
+    def at(self, position: Coord) -> Piece | None: ...
+
+    def _set_at(self, position: Coord, piece: Piece | None) -> None: ...
+
+    def iter_enumerate(self) -> Iterable[tuple[Coord, Piece | None]]: ...
+
+
+class BoardSimulation:
+    """
+    Lightweight board-like view used for royal-safety simulation.
+    """
+
+    def __init__(self, board: "Board") -> None:
+        self.width = board.width
+        self.height = board.height
+        self.board = deepcopy(board.board)
+        self.factory = board.factory
+
+    def at(self, position: Coord) -> Piece | None:
+        if not self.is_in_bounds(position):
+            raise ValueError(f"Position out of bounds {position}")
+        return self.board[position.r][position.c]
+
+    def _set_at(self, position: Coord, piece: Piece | None) -> None:
+        if not self.is_in_bounds(position):
+            raise ValueError(f"Position out of bounds {position}")
+        self.board[position.r][position.c] = piece
+
+    def set_at(self, position: Coord, piece: Piece | None) -> None:
+        self._set_at(position, piece)
+
+    def _apply_move(self, move: Move, piece: Piece) -> None:
+        self._set_at(move.start, None)
+        self._set_at(move.end, piece)
+        piece.move(move.end)
+
+    def is_in_bounds(self, position: Coord) -> bool:
+        return (
+            position.r >= 0
+            and position.r < self.height
+            and position.c >= 0
+            and position.c < self.width
+        )
+
+    def is_empty(self, position: Coord) -> bool:
+        return self.at(position) is None
+
+    def side_at(self, position: Coord) -> Side2 | None:
+        piece = self.at(position)
+        return piece.side if piece is not None else None
+
+    def is_enemy(self, position: Coord, side: Side2) -> bool:
+        enemy_side = self.side_at(position)
+        if enemy_side is None:
+            return False
+        return enemy_side != side
+
+    def is_allied(self, position: Coord, side: Side2) -> bool:
+        return self.side_at(position) == side
+
+    def iter_positions(self) -> Iterable[Coord]:
+        for r in range(self.height):
+            for c in range(self.width):
+                yield Coord(r, c)
+
+    def iter_enumerate(self) -> Iterable[tuple[Coord, Piece | None]]:
+        for r, row in enumerate(self.board):
+            for c, piece in enumerate(row):
+                if piece is not None:
+                    yield Coord(r, c), piece
+
+    def iter_positions_line(
+        self,
+        start: Coord,
+        end: Coord,
+        criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional,
+    ) -> Iterable[Coord]:
+        if not criteria(start, end):
+            raise StopIteration
+        direction = start.direction_unit(end)
+        while start != end + direction:
+            yield start
+            start += direction
+
+    def iter_positions_towards(self, start: Coord, direction: Coord) -> Iterable[Coord]:
+        while self.is_in_bounds(start):
+            yield start
+            start += direction
+
+    def is_empty_line(
+        self,
+        start: Coord,
+        end: Coord,
+        criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional,
+    ) -> bool:
+        if not criteria(start, end):
+            return False
+        for position in self.iter_positions_line(start, end, criteria):
+            if position == start or position == end:
+                continue
+            if self.at(position) is not None:
+                return False
+        return True

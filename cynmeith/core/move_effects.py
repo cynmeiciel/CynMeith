@@ -2,26 +2,14 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING
 
 from cynmeith.utils.coord import Coord
 
 if TYPE_CHECKING:
+    from cynmeith.core.board import BoardLike
     from cynmeith.core.piece import Piece
     from cynmeith.utils.aliases import Move
-
-
-class PieceFactoryLike(Protocol):
-    def create_piece(self, piece_symbol: str, position: Coord) -> Piece | None: ...
-
-
-class BoardLike(Protocol):
-    @property
-    def factory(self) -> PieceFactoryLike: ...
-
-    def at(self, position: Coord) -> Piece | None: ...
-
-    def _set_at(self, position: Coord, piece: Piece | None) -> None: ...
 
 
 class MoveEffect(ABC):

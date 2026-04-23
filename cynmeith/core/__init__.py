@@ -3,7 +3,7 @@ The core module contains the core classes and functions
 of the CynMeith package.
 """
 
-from cynmeith.core.board import Board
+from cynmeith.core.board import Board, BoardSimulation
 from cynmeith.core.config import Config
 from cynmeith.core.game import FreeTurnPolicy, Game, QuotaTurnPolicy, TurnPolicy
 from cynmeith.core.game_systems import (
@@ -28,7 +28,6 @@ from cynmeith.core.move_manager import MoveManager
 from cynmeith.core.piece import Piece
 from cynmeith.core.piece_factory import PieceFactory
 from cynmeith.core.royal_rules import (
-    BoardSimulation,
     RoyalCheckmateCondition,
     RoyalRuleset,
     RoyalSafetyMoveManager,

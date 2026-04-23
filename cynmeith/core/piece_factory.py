@@ -1,4 +1,5 @@
 from importlib import import_module
+from typing import Protocol
 
 from cynmeith.core.config import Config
 from cynmeith.core.piece import Piece
@@ -53,3 +54,7 @@ class PieceFactory:
         if not piece_cls:
             raise PieceError(f"Piece `{piece_symbol}` is not registered.")
         return piece_cls(side, position)
+
+
+class PieceFactoryLike(Protocol):
+    def create_piece(self, piece_symbol: str, position: Coord) -> Piece | None: ...
