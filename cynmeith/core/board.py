@@ -475,6 +475,8 @@ class BoardLike(Protocol):
 
     def _set_at(self, position: Coord, piece: Piece | None) -> None: ...
 
+    def iter_positions(self) -> Iterable[Coord]: ...
+
     def iter_enumerate(self) -> Iterable[tuple[Coord, Piece | None]]: ...
 
 
@@ -560,6 +562,38 @@ class BoardSimulation:
             yield start
             start += direction
 
+    def iter_pieces_line(
+        self,
+        start: Coord,
+        end: Coord,
+        criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional,
+        none_piece: bool = False,
+    ) -> Iterable[Piece | None]:
+        for position in self.iter_positions_line(start, end, criteria):
+            piece = self.at(position)
+            if piece is not None or none_piece:
+                yield piece
+
+    def iter_enumerate_line(
+        self,
+        start: Coord,
+        end: Coord,
+        criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional,
+        none_piece: bool = False,
+    ) -> Iterable[tuple[Coord, Piece | None]]:
+        for position in self.iter_positions_line(start, end, criteria):
+            piece = self.at(position)
+            if piece is not None or none_piece:
+                yield position, piece
+
+    def iter_enumerate_towards(
+        self, start: Coord, direction: Coord, none_piece: bool = False
+    ) -> Iterable[tuple[Coord, Piece | None]]:
+        for position in self.iter_positions_towards(start, direction):
+            piece = self.at(position)
+            if piece is not None or none_piece:
+                yield position, piece
+
     def is_empty_line(
         self,
         start: Coord,
@@ -574,3 +608,48 @@ class BoardSimulation:
             if self.at(position) is not None:
                 return False
         return True
+
+    def count_pieces_line(
+        self,
+        start: Coord,
+        end: Coord,
+        criteria: Callable[[Coord, Coord], bool] = Coord.is_omnidirectional,
+    ) -> int:
+        if not criteria(start, end):
+            raise ValueError(f"Invalid line criteria between {start} and {end}")
+        return len(list(self.iter_pieces_line(start, end, criteria)))
+
+    def count_pieces_from(self, position: Coord) -> dict[str, int]:
+        if not self.is_in_bounds(position):
+            raise ValueError(f"Position out of bounds {position}")
+
+        counts = {"row": 0, "column": 0, "diagonal1": 0, "diagonal2": 0}
+
+        counts["row"] = self.count_pieces_line(
+            Coord(position.r, 0), Coord(position.r, self.width - 1), Coord.is_orthogonal
+        )
+        counts["column"] = self.count_pieces_line(
+            Coord(0, position.c),
+            Coord(self.height - 1, position.c),
+            Coord.is_orthogonal,
+        )
+
+        start_diag1 = Coord(
+            max(position.r - position.c, 0), max(position.c - position.r, 0)
+        )
+        end_diag1 = Coord(
+            min(position.r + (self.width - position.c - 1), self.height - 1),
+            min(position.c + (self.height - position.r - 1), self.width - 1),
+        )
+        counts["diagonal1"] = self.count_pieces_line(
+            start_diag1, end_diag1, Coord.is_diagonal
+        )
+
+        s = position.r + position.c
+        start_diag2 = Coord(max(0, s - self.width + 1), min(s, self.width - 1))
+        end_diag2 = Coord(min(s, self.height - 1), max(0, s - self.height + 1))
+        counts["diagonal2"] = self.count_pieces_line(
+            start_diag2, end_diag2, Coord.is_diagonal
+        )
+
+        return counts

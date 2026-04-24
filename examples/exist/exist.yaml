@@ -1,0 +1,9 @@
+pieces:
+  ExistPiece:
+    symbol: X
+    class_path: examples.exist.piece
+
+width: 8
+height: 8
+
+fen: 8/8/8/8/8/8/8/8

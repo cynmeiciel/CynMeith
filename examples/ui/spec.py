@@ -1,7 +1,11 @@
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any
 
 from cynmeith import Game
+
+if TYPE_CHECKING:
+    import tkinter as tk
 
 
 @dataclass(frozen=True)
@@ -25,3 +29,4 @@ class GameSpec:
     status_hint: str = "Click a piece to select it."
     promotion_choices: tuple[str, ...] = ()
     promotion_prompt: str = "Choose promotion piece"
+    app_class: type["tk.Tk"] | None = None  # Custom app class for specialized UIs
