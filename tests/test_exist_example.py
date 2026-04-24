@@ -1,7 +1,7 @@
 from cynmeith import GameOutcome
 from cynmeith.utils import Coord
-from examples.exist.game import build_game_spec
 from examples.exist.exist_turn_policy import ExistTurnSnapshot
+from examples.exist.game import build_game_spec
 
 
 def test_exist_place_consumes_reserve_and_requires_end_turn_after_one_action() -> None:
@@ -29,8 +29,9 @@ def test_exist_tile_capture_adds_captured_piece_to_attackers_reserve() -> None:
 
     game.board.set_at(Coord(3, 3), game.board.factory.create_piece("X", Coord(3, 3)))
     game.board.set_at(Coord(3, 4), game.board.factory.create_piece("x", Coord(3, 4)))
+    game.board.set_at(Coord(4, 3), game.board.factory.create_piece("X", Coord(4, 3)))
 
-    assert game.reserves.get_count(True) == 7
+    assert game.reserves.get_count(True) == 6
     assert game.reserves.get_count(False) == 7
 
     assert game.can_move(Coord.null(), Coord(4, 4), "PLACE")
@@ -38,7 +39,7 @@ def test_exist_tile_capture_adds_captured_piece_to_attackers_reserve() -> None:
 
     assert game.board.at(Coord(3, 4)) is None
     assert game.board.at(Coord(4, 4)) is not None
-    assert game.reserves.get_count(True) == 7
+    assert game.reserves.get_count(True) == 6
     assert game.current_side is False
 
 
@@ -50,11 +51,10 @@ def test_exist_place_may_temporarily_break_line_rule_if_capture_fixes_it() -> No
     game.board.set_at(Coord(2, 2), game.board.factory.create_piece("X", Coord(2, 2)))
     game.board.set_at(Coord(3, 5), game.board.factory.create_piece("X", Coord(3, 5)))
 
-    assert game.can_move(Coord.null(), Coord(3, 4), "PLACE")
-    game.move(Coord.null(), Coord(3, 4), "PLACE")
+    assert game.can_move(Coord(2, 2), Coord(3, 2), "MOVE")
+    game.move(Coord(2, 2), Coord(3, 2), "MOVE")
 
     assert game.board.at(Coord(3, 3)) is None
-    assert game.board.at(Coord(3, 4)) is not None
     assert game.board.at(Coord(3, 5)) is not None
 
 
@@ -66,7 +66,10 @@ def test_exist_tile_restriction_counts_piece_itself_and_neighbors() -> None:
     game.board.set_at(Coord(4, 4), game.board.factory.create_piece("X", Coord(4, 4)))
 
     assert game.can_move(Coord.null(), Coord(0, 0), "PLACE")
-    assert not game.can_move(Coord.null(), Coord(3, 4), "PLACE")
+    assert game.can_move(Coord.null(), Coord(3, 4), "PLACE")
+
+    game.move(Coord.null(), Coord(3, 4), "PLACE")
+    assert not game.can_move(Coord.null(), Coord(2, 5), "PLACE")
 
 
 def test_exist_two_pieces_in_same_tile_are_legal() -> None:

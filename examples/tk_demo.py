@@ -30,7 +30,7 @@ def main() -> None:
         spec = build_exist_spec()
     else:
         spec = build_chess_spec(args.config_source)
-    
+
     # Use custom app class if provided, otherwise default to TkGameApp
     app_class = spec.app_class if spec.app_class else TkGameApp
     app_class(spec).mainloop()

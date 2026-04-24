@@ -102,7 +102,9 @@ class ExistManager(MoveManager):
         - all captures are applied together in simulation before the final
           legality check
         """
-        if not self.board.is_in_bounds(move.start) or not self.board.is_in_bounds(move.end):
+        if not self.board.is_in_bounds(move.start) or not self.board.is_in_bounds(
+            move.end
+        ):
             return None
 
         piece = self.board.at(move.start)

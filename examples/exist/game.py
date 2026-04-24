@@ -45,7 +45,9 @@ class ExistGame(Game):
         extra_info: dict[str, Any] | None = None,
     ) -> bool:
         normalized_type = self._normalize_action_type(move_type)
-        if normalized_type == "PLACE" and not self.reserves.has_pieces(self.current_side):
+        if normalized_type == "PLACE" and not self.reserves.has_pieces(
+            self.current_side
+        ):
             return False
         return super().can_move(
             start,
@@ -65,7 +67,9 @@ class ExistGame(Game):
             raise InvalidMoveError("Game is already over.")
 
         normalized_type = self._normalize_action_type(move_type)
-        if normalized_type == "PLACE" and not self.reserves.has_pieces(self.current_side):
+        if normalized_type == "PLACE" and not self.reserves.has_pieces(
+            self.current_side
+        ):
             raise InvalidMoveError("No reserve pieces available to place.")
 
         resolved_extra = self._augment_extra_info(normalized_type, extra_info)
@@ -131,7 +135,9 @@ class ExistGame(Game):
         # Manual board edits rebuild reserves from current on-board piece counts.
         counts = {
             True: sum(
-                1 for piece in self.board.iter_pieces() if piece is not None and piece.side
+                1
+                for piece in self.board.iter_pieces()
+                if piece is not None and piece.side
             ),
             False: sum(
                 1

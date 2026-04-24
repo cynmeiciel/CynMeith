@@ -160,4 +160,6 @@ class ExistTurnPolicy:
         effects = move.extra_info.get("effects")
         if not isinstance(effects, list):
             return False
-        return any(effect.__class__.__name__ == "RemovePieceEffect" for effect in effects)
+        return any(
+            effect.__class__.__name__ == "RemovePieceEffect" for effect in effects
+        )

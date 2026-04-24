@@ -52,7 +52,6 @@ class ExistTkGameApp(TkGameApp):
             self.place_button.config(bg="#f0c94d", fg="#111111")
             self.set_status("Place mode on. Click an empty square to place a piece.")
         else:
-            self.place_button.config(bg="SystemButtonFace", fg="SystemButtonText")
             self.set_status("Place mode off.")
         self.refresh()
 
@@ -74,9 +73,7 @@ class ExistTkGameApp(TkGameApp):
 
         black_count = self.reserves.get_count(True)
         white_count = self.reserves.get_count(False)
-        self.reserve_label.config(
-            text=f"Reserves B/W: {black_count}/{white_count}"
-        )
+        self.reserve_label.config(text=f"Reserves B/W: {black_count}/{white_count}")
 
         turn_info = self.game.turn_policy.get_turn_info()
         can_end = "Yes" if turn_info["can_end_turn"] else "No"
@@ -117,7 +114,6 @@ class ExistTkGameApp(TkGameApp):
             self.set_status(f"Placed a piece at {position}.")
 
         self.place_mode = False
-        self.place_button.config(bg="SystemButtonFace", fg="SystemButtonText")
         self.clear_selection()
         self.refresh()
 
@@ -133,13 +129,11 @@ class ExistTkGameApp(TkGameApp):
             self.set_status(f"Moved to {position}.")
 
         self.place_mode = False
-        self.place_button.config(bg="SystemButtonFace", fg="SystemButtonText")
         self.clear_selection()
         self.refresh()
 
     def reset_board(self) -> None:
         self.place_mode = False
-        self.place_button.config(bg="SystemButtonFace", fg="SystemButtonText")
         super().reset_board()
         self.update_reserve_display()
 
@@ -151,7 +145,6 @@ class ExistTkGameApp(TkGameApp):
             return
 
         self.place_mode = False
-        self.place_button.config(bg="SystemButtonFace", fg="SystemButtonText")
         self.clear_selection()
         self.set_status("Move undone.")
         self.refresh()
@@ -164,7 +157,6 @@ class ExistTkGameApp(TkGameApp):
             return
 
         self.place_mode = False
-        self.place_button.config(bg="SystemButtonFace", fg="SystemButtonText")
         self.clear_selection()
         self.set_status("Move redone.")
         self.refresh()
