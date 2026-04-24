@@ -214,14 +214,14 @@ class Game:
         if self.is_over:
             return False
         try:
-            piece = self.board.at(start)
-            if piece is None:
-                return False
             move = Move(start, end, move_type, extra_info)
-            if not self.turn_policy.can_move(self, piece, move):
-                return False
             resolved_move = self.board.manager.resolve_move(move)
             if resolved_move is None:
+                return False
+            piece = self.board.manager.get_actor_piece(resolved_move)
+            if piece is None:
+                return False
+            if not self.turn_policy.can_move(self, piece, resolved_move):
                 return False
             if self.phase_system is not None and not self.phase_system.can_move(
                 self, piece, resolved_move
@@ -245,16 +245,15 @@ class Game:
         if self.is_over:
             raise InvalidMoveError("Game is already over.")
 
-        piece = self.board.at(start)
-        if piece is None:
-            raise PieceError("No piece at starting position")
-
         move = Move(start, end, move_type, extra_info)
-        if not self.turn_policy.can_move(self, piece, move):
-            raise InvalidMoveError("Move is not allowed by the active turn policy.")
         resolved_move = self.board.manager.resolve_move(move)
         if resolved_move is None:
             raise InvalidMoveError("Invalid move!")
+        piece = self.board.manager.get_actor_piece(resolved_move)
+        if piece is None:
+            raise PieceError("No actor piece found for this move")
+        if not self.turn_policy.can_move(self, piece, resolved_move):
+            raise InvalidMoveError("Move is not allowed by the active turn policy.")
         if self.phase_system is not None and not self.phase_system.can_move(
             self, piece, resolved_move
         ):

@@ -4,10 +4,12 @@ from typing import Literal
 from cynmeith import (
     Config,
     Game,
+    GameOutcome,
     MaterialScoreSystem,
     QuotaTurnPolicy,
     RoyalCheckmateCondition,
     RoyalStalemateCondition,
+    WinCondition,
 )
 from examples.ui.spec import BoardTheme, GameSpec
 
@@ -22,6 +24,72 @@ CHESS_MATERIAL_VALUES = {
     "Q": 9,
     "K": 0,
 }
+
+
+class ChessFiftyMoveCondition(WinCondition):
+    def evaluate(self, game: "Game") -> GameOutcome | None:
+        history = game.board.history
+        limit = 100
+
+        if history.num_moves < limit:
+            return None
+
+        for i in range(
+            len(history.move_stack) - 1, len(history.move_stack) - limit - 1, -1
+        ):
+            move = history.move_stack[i]
+            state_before = history.state_stack[i]
+            state_after = history.state_stack[i + 1]
+
+            piece_after = state_after[move.end.r][move.end.c]
+            if piece_after and piece_after.symbol.upper() == "P":
+                return None
+
+            if state_before[move.end.r][move.end.c] is not None:
+                return None
+
+            if move.extra_info and any(
+                e.__class__.__name__ == "RemovePieceEffect"
+                for e in move.extra_info.get("effects", [])
+            ):
+                return None
+
+        return GameOutcome(None, "draw", "50-move rule reached.")
+
+
+class ChessThreefoldRepetitionCondition(WinCondition):
+    def evaluate(self, game: "Game") -> GameOutcome | None:
+        history = game.board.history
+        if len(history.state_stack) < 9:
+            return None
+
+        def get_fingerprint(grid, side):
+            pieces_data = []
+            for row in grid:
+                for piece in row:
+                    if piece is None:
+                        pieces_data.append(None)
+                    else:
+                        pieces_data.append(
+                            (
+                                piece.symbol,
+                                piece.side,
+                                getattr(piece, "has_moved", None),
+                            )
+                        )
+            return (tuple(pieces_data), side)
+
+        current_fp = get_fingerprint(history.state_stack[-1], game.current_side)
+
+        count = sum(
+            1
+            for i, grid in enumerate(history.state_stack)
+            if get_fingerprint(grid, (i % 2 == 0)) == current_fp
+        )
+
+        if count >= 3:
+            return GameOutcome(None, "draw", "Threefold repetition.")
+        return None
 
 
 def _build_chess_config_data() -> dict:
@@ -56,6 +124,8 @@ def _build_win_conditions() -> list:
     return [
         RoyalCheckmateCondition(CHESS_ROYAL_RULES, reason="Checkmate."),
         RoyalStalemateCondition(CHESS_ROYAL_RULES, kind="draw", reason="Stalemate."),
+        ChessFiftyMoveCondition(),
+        ChessThreefoldRepetitionCondition(),
     ]
 
 

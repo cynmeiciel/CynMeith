@@ -204,6 +204,32 @@ class StrikeManager(MoveManager):
         return Move(move.start, move.end, move.move_type, extra)
 
 
+class DropManager(MoveManager):
+    def resolve_move(self, move: Move) -> Move | None:
+        if move.move_type.upper() != "DROP":
+            return super().resolve_move(move)
+
+        extra = self._build_extra_info(move)
+        symbol = extra.get("symbol")
+        side = extra.get("side")
+        if not isinstance(symbol, str) or len(symbol) != 1:
+            return None
+        if not isinstance(side, bool):
+            return None
+        if not self.board.is_in_bounds(move.end) or not self.board.is_empty(move.end):
+            return None
+
+        actor_symbol = symbol.upper() if side else symbol.lower()
+        actor_piece = self.board.factory.create_piece(actor_symbol, Coord.null())
+        if actor_piece is None:
+            return None
+
+        extra["move_actor"] = False
+        extra["actor_piece"] = actor_piece
+        extra["effects"] = EffectPresets.drop(symbol=symbol, side=side)
+        return Move(move.start, move.end, move.move_type, extra)
+
+
 class ReachRowWinCondition(WinCondition):
     def __init__(self, side: bool, row: int) -> None:
         self.side = side
@@ -318,6 +344,42 @@ def test_game_supports_stationary_skill_move_with_side_effect() -> None:
 
     assert game.board.at(Coord(1, 1)).get_symbol_with_side() == "S"
     assert game.board.at(Coord(1, 2)) is None
+
+
+def test_game_supports_drop_move_without_piece_at_start() -> None:
+    game = Game(
+        Config.from_data(make_empty_chess_config_data()),
+        move_manager=DropManager,
+    )
+
+    start = Coord.null()
+    end = Coord(3, 3)
+
+    assert game.can_move(
+        start,
+        end,
+        move_type="DROP",
+        extra_info={"symbol": "P", "side": True},
+    )
+
+    game.move(
+        start,
+        end,
+        move_type="DROP",
+        extra_info={"symbol": "P", "side": True},
+    )
+
+    placed_piece = game.board.at(end)
+    assert placed_piece is not None
+    assert placed_piece.get_symbol_with_side() == "P"
+
+    game.undo_move()
+    assert game.board.at(end) is None
+
+    game.redo_move()
+    redone_piece = game.board.at(end)
+    assert redone_piece is not None
+    assert redone_piece.get_symbol_with_side() == "P"
     assert game.board.history.num_moves == 1
     assert len(game.board.history.move_stack) == 1
     assert len(game.board.history.state_stack) == 2

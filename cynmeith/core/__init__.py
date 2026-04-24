@@ -23,6 +23,7 @@ from cynmeith.core.game_systems import (
     TwoStagePhaseSystem,
     WinCondition,
 )
+from cynmeith.core.move_effects import PlacePieceEffect
 from cynmeith.core.move_history import MoveHistory
 from cynmeith.core.move_manager import MoveManager
 from cynmeith.core.piece import Piece
@@ -51,6 +52,7 @@ __all__ = [
     "PhaseSystem",
     "Piece",
     "PieceFactory",
+    "PlacePieceEffect",
     "PieceCountScoringSystem",
     "QuotaTurnPolicy",
     "ReachSquareCondition",

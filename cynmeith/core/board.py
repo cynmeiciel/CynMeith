@@ -370,14 +370,14 @@ class Board:
         """
         Perform a move by a player, not a piece.
         """
-        piece = self.at(start)
-        if piece is None:
-            raise PieceError("No piece at starting position")
         move = Move(start, end, move_type, extra_info)
         resolved_move = self.manager.resolve_move(move)
         if resolved_move is None:
             raise InvalidMoveError("Invalid move!")
-        self.manager.apply_move(resolved_move, piece)
+        actor_piece = self.manager.get_actor_piece(resolved_move)
+        if actor_piece is None:
+            raise PieceError("No actor piece found for this move")
+        self.manager.apply_move(resolved_move, actor_piece)
 
     def _apply_move(self, move: Move, piece: Piece) -> None:
         """

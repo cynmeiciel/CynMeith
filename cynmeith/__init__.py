@@ -28,6 +28,7 @@ from cynmeith.core.move_effects import (
     EffectPresets,
     MoveEffect,
     MovePieceEffect,
+    PlacePieceEffect,
     PromotePieceEffect,
     RemovePieceEffect,
 )
@@ -64,6 +65,7 @@ __all__ = [
     "Piece",
     "PieceCountScoringSystem",
     "PromotePieceEffect",
+    "PlacePieceEffect",
     "ReachSquareCondition",
     "RemovePieceEffect",
     "ResourceSystem",

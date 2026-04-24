@@ -87,6 +87,37 @@ class PromotePieceEffect(MoveEffect):
         board._set_at(target, promoted_piece)
 
 
+@dataclass(frozen=True)
+class PlacePieceEffect(MoveEffect):
+    """
+    Effect to place a new piece on the board, typically used for drop moves.
+
+    Attributes:
+        symbol: Base symbol for the piece to place.
+        side: Optional explicit side. If None, `symbol` case is used as-is.
+        position: Explicit target coordinate. If None, defaults to move.end.
+    """
+
+    symbol: str
+    side: bool | None = None
+    position: Coord | None = None
+
+    def apply(self, board: BoardLike, move: Move, piece: Piece) -> None:
+        target = self.position or move.end
+        if len(self.symbol) != 1:
+            raise ValueError("Placed piece symbol must be a single character.")
+
+        normalized = self.symbol.upper()
+        final_symbol = (
+            (normalized if self.side else normalized.lower())
+            if self.side is not None
+            else self.symbol
+        )
+
+        placed_piece = board.factory.create_piece(final_symbol, target)
+        board._set_at(target, placed_piece)
+
+
 class EffectPresets:
     """
     Reusable effect builders for game-specific move managers.
@@ -107,3 +138,9 @@ class EffectPresets:
     @staticmethod
     def promote(symbol: str, position: Coord | None = None) -> list[MoveEffect]:
         return [PromotePieceEffect(symbol, position)]
+
+    @staticmethod
+    def drop(
+        symbol: str, side: bool | None = None, position: Coord | None = None
+    ) -> list[MoveEffect]:
+        return [PlacePieceEffect(symbol=symbol, side=side, position=position)]

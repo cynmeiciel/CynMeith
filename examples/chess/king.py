@@ -19,6 +19,12 @@ class King(Piece):
             if board.is_in_bounds(position):
                 yield position
 
+        if not self.has_moved:
+            for dc in (-2, 2):
+                pos = Coord(self.position.r, self.position.c + dc)
+                if board.is_in_bounds(pos):
+                    yield pos
+
     def move(self, new_position: Coord) -> None:
         self.position = new_position
         self.has_moved = True

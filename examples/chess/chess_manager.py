@@ -27,12 +27,12 @@ class ChessManager(RoyalSafetyMoveManager):
                     return castling_move
                 return None
 
+        extra = self._build_extra_info(move)
+
         if self.board.is_allied(move.end, piece.side):
             return None
         if self._targets_enemy_royal(move, piece.side):
             return None
-
-        extra = self._build_extra_info(move)
 
         if isinstance(piece, Pawn) and self._is_valid_en_passant(piece, move):
             capture_position = Coord(move.start.r, move.end.c)
@@ -140,8 +140,8 @@ class ChessManager(RoyalSafetyMoveManager):
             extra,
         )
 
-    def _with_effects(self, move: Move, effects: list, extra: dict) -> Move:
-        merged = dict(extra)
+    def _with_effects(self, move: Move, effects: list, extra: dict = None) -> Move:
+        merged = dict(extra) if extra else {}
         existing = merged.get("effects")
         if isinstance(existing, list):
             merged["effects"] = [*existing, *effects]
