@@ -1,5 +1,5 @@
 from collections.abc import Iterable
-from copy import deepcopy
+from copy import copy
 from typing import Callable, Iterable, Protocol
 
 from cynmeith.core.config import Config
@@ -344,6 +344,7 @@ class Board:
         """
         if not self.is_in_bounds(position):
             raise PositionError(f"Position out of bounds {position}")
+        self.history.record_cell_change(position, self.board[position.r][position.c])
         self.board[position.r][position.c] = piece
 
     def type_at(self, position: Coord) -> PieceClass | None:
@@ -482,32 +483,68 @@ class BoardLike(Protocol):
 
 class BoardSimulation:
     """
-    Lightweight board-like view used for royal-safety simulation.
+    Copy-on-write board view used for move resolution and royal-safety
+    checks.
+
+    Reads fall through to the underlying board until the caller touches a
+    cell. The first read of a non-empty cell promotes that cell into a
+    sparse overlay holding a shallow copy of the piece, so subsequent
+    mutations (e.g. `piece.move()`) cannot leak back to the real board.
+    Writes go straight into the overlay.
+
+    For workloads that touch only a handful of cells (royal safety),
+    this avoids the O(board) deepcopy that the eager version paid on
+    every move attempt.
     """
 
     def __init__(self, board: "Board") -> None:
         self.width = board.width
         self.height = board.height
-        self.board = deepcopy(board.board)
         self.factory = board.factory
+        self._underlying = board
+        self._overlay: dict[Coord, Piece | None] = {}
+
+    def _get_raw(self, position: Coord) -> Piece | None:
+        """
+        Return the piece reference at `position` without lazy-copying.
+
+        Use for read-only iteration where the caller will not mutate the
+        returned piece.
+        """
+        if position in self._overlay:
+            return self._overlay[position]
+        return self._underlying.board[position.r][position.c]
 
     def at(self, position: Coord) -> Piece | None:
         if not self.is_in_bounds(position):
             raise ValueError(f"Position out of bounds {position}")
-        return self.board[position.r][position.c]
+        if position in self._overlay:
+            return self._overlay[position]
+        underlying = self._underlying.board[position.r][position.c]
+        if underlying is None:
+            return None
+        # Lazy copy: any access materialises a writable copy so callers
+        # that mutate the returned piece (e.g. `piece.move()`) cannot
+        # affect the real board.
+        piece_copy = copy(underlying)
+        self._overlay[position] = piece_copy
+        return piece_copy
 
     def _set_at(self, position: Coord, piece: Piece | None) -> None:
         if not self.is_in_bounds(position):
             raise ValueError(f"Position out of bounds {position}")
-        self.board[position.r][position.c] = piece
+        self._overlay[position] = piece
 
     def set_at(self, position: Coord, piece: Piece | None) -> None:
         self._set_at(position, piece)
 
     def _apply_move(self, move: Move, piece: Piece) -> None:
+        # Always work on a copy so callers that hand us a piece sourced
+        # from the real board don't have its state mutated by `move()`.
+        piece_copy = copy(piece)
         self._set_at(move.start, None)
-        self._set_at(move.end, piece)
-        piece.move(move.end)
+        self._set_at(move.end, piece_copy)
+        piece_copy.move(move.end)
 
     def is_in_bounds(self, position: Coord) -> bool:
         return (
@@ -518,10 +555,14 @@ class BoardSimulation:
         )
 
     def is_empty(self, position: Coord) -> bool:
-        return self.at(position) is None
+        if not self.is_in_bounds(position):
+            raise ValueError(f"Position out of bounds {position}")
+        return self._get_raw(position) is None
 
     def side_at(self, position: Coord) -> Side2 | None:
-        piece = self.at(position)
+        if not self.is_in_bounds(position):
+            raise ValueError(f"Position out of bounds {position}")
+        piece = self._get_raw(position)
         return piece.side if piece is not None else None
 
     def is_enemy(self, position: Coord, side: Side2) -> bool:
@@ -539,10 +580,11 @@ class BoardSimulation:
                 yield Coord(r, c)
 
     def iter_enumerate(self) -> Iterable[tuple[Coord, Piece | None]]:
-        for r, row in enumerate(self.board):
-            for c, piece in enumerate(row):
-                if piece is not None:
-                    yield Coord(r, c), piece
+        # Read-only iteration: use raw refs to avoid lazy-copy overhead.
+        for position in self.iter_positions():
+            piece = self._get_raw(position)
+            if piece is not None:
+                yield position, piece
 
     def iter_positions_line(
         self,
@@ -570,7 +612,7 @@ class BoardSimulation:
         none_piece: bool = False,
     ) -> Iterable[Piece | None]:
         for position in self.iter_positions_line(start, end, criteria):
-            piece = self.at(position)
+            piece = self._get_raw(position)
             if piece is not None or none_piece:
                 yield piece
 
@@ -582,7 +624,7 @@ class BoardSimulation:
         none_piece: bool = False,
     ) -> Iterable[tuple[Coord, Piece | None]]:
         for position in self.iter_positions_line(start, end, criteria):
-            piece = self.at(position)
+            piece = self._get_raw(position)
             if piece is not None or none_piece:
                 yield position, piece
 
@@ -590,7 +632,7 @@ class BoardSimulation:
         self, start: Coord, direction: Coord, none_piece: bool = False
     ) -> Iterable[tuple[Coord, Piece | None]]:
         for position in self.iter_positions_towards(start, direction):
-            piece = self.at(position)
+            piece = self._get_raw(position)
             if piece is not None or none_piece:
                 yield position, piece
 
@@ -605,7 +647,7 @@ class BoardSimulation:
         for position in self.iter_positions_line(start, end, criteria):
             if position == start or position == end:
                 continue
-            if self.at(position) is not None:
+            if self._get_raw(position) is not None:
                 return False
         return True
 

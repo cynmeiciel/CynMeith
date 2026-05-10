@@ -144,3 +144,72 @@ def test_is_enemy_and_is_allied(board):
     assert board.is_enemy(Coord(1, 0), False)
     assert not board.is_allied(Coord(1, 0), False)
     assert board.is_allied(Coord(1, 0), True)
+
+
+def test_move_history_delta_stores_only_changed_cells(board):
+    """
+    A single move should only retain before/after entries for the cells
+    it actually touched, not a full board snapshot.
+    """
+    board.move(Coord(1, 0), Coord(2, 0))
+
+    assert len(board.history._deltas) == 1
+    delta = board.history._deltas[0]
+    assert set(delta.before.keys()) == {Coord(1, 0), Coord(2, 0)}
+    assert set(delta.after.keys()) == {Coord(1, 0), Coord(2, 0)}
+    assert delta.before[Coord(1, 0)] is not None
+    assert delta.before[Coord(2, 0)] is None
+    assert delta.after[Coord(1, 0)] is None
+    assert delta.after[Coord(2, 0)] is not None
+
+
+def test_state_stack_materialises_lazily(board):
+    """
+    `state_stack` should expose a sequence view: indexing and iteration
+    must rebuild full board grids from baseline + deltas.
+    """
+    board.move(Coord(1, 0), Coord(2, 0))
+    board.move(Coord(6, 0), Coord(4, 0))
+
+    states = board.history.state_stack
+    assert len(states) == 3
+    assert states[0][1][0] is not None and states[0][2][0] is None
+    assert states[1][1][0] is None and states[1][2][0] is not None
+    assert states[-1][6][0] is None and states[-1][4][0] is not None
+
+    iterated = list(board.history.state_stack)
+    assert len(iterated) == 3
+    assert iterated[0][6][0] is not None
+    assert iterated[2][4][0] is not None
+
+
+def test_state_stack_preserves_pre_mutation_piece_state(board):
+    """
+    Snapshots stored in deltas must reflect each piece's attributes at
+    the moment of the move, even after the live piece mutates further.
+    """
+    board.move(Coord(1, 0), Coord(2, 0))
+
+    pre_move_pawn = board.history.state_stack[0][1][0]
+    post_move_pawn = board.history.state_stack[1][2][0]
+    assert pre_move_pawn.distance == 2
+    assert post_move_pawn.distance == 1
+
+
+def test_max_history_caps_undo_depth_and_folds_oldest_into_baseline(board):
+    """
+    Bounding history should drop oldest deltas, keeping the baseline
+    in sync so deeper undo simply runs out instead of corrupting state.
+    """
+    board.history.set_max_history(1)
+
+    board.move(Coord(1, 0), Coord(2, 0))
+    board.move(Coord(6, 0), Coord(4, 0))
+
+    assert len(board.history._deltas) == 1
+    assert board.history._baseline_state[1][0] is None
+    assert board.history._baseline_state[2][0] is not None
+
+    board.history.undo_move()
+    with pytest.raises(Exception):
+        board.history.undo_move()

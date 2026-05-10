@@ -61,6 +61,7 @@ class MoveManager:
 
         # Optimization: use get with default to avoid extra dict lookups
         move_actor = cast(bool, extra.get("move_actor", True))
+        self.board.history.begin_recording()
         if move_actor:
             self.board._apply_move(move, piece)
 

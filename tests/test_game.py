@@ -531,6 +531,30 @@ def test_manual_board_setup_reseeds_game_level_state() -> None:
     assert game.outcome == GameOutcome(True, "win", "Side True reached row 7")
 
 
+def test_game_max_history_caps_state_snapshots_and_history(board=None) -> None:
+    """
+    Bounded history should keep `state_snapshots` aligned with the
+    capped move history so undo bottoms out cleanly.
+    """
+    game = Game(
+        Config.from_data(make_chess_config_data()),
+        move_manager=ChessManager,
+        max_history=2,
+    )
+
+    game.move(Coord(1, 0), Coord(2, 0))
+    game.move(Coord(6, 0), Coord(4, 0))
+    game.move(Coord(1, 1), Coord(2, 1))
+
+    assert game.board.history.num_moves == 2
+    assert len(game._state_snapshots) == 3
+
+    game.undo_move()
+    game.undo_move()
+    with pytest.raises(Exception):
+        game.undo_move()
+
+
 def test_xiangqi_example_uses_standard_turn_order() -> None:
     game = build_xiangqi_spec().create_game()
 

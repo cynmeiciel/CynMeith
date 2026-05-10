@@ -26,7 +26,7 @@ class ExistGame(Game):
     - undo/redo must restore reserve counts alongside board and turn state
     """
 
-    def __init__(self) -> None:
+    def __init__(self, max_history: int | None = None) -> None:
         self.reserves = ReserveManager()
         self._reserve_snapshots: list[dict[bool, int]] = []
         self._redo_reserve_snapshots: list[dict[bool, int]] = []
@@ -35,6 +35,7 @@ class ExistGame(Game):
             ExistManager,
             turn_policy=ExistTurnPolicy(),
             win_conditions=_build_win_conditions(),
+            max_history=max_history,
         )
 
     def can_move(
@@ -94,6 +95,15 @@ class ExistGame(Game):
         self._redo_state_snapshots.clear()
         self._reserve_snapshots.append(self.reserves.snapshot())
         self._redo_reserve_snapshots.clear()
+        self._trim_state_snapshots()
+
+    def _trim_state_snapshots(self) -> None:
+        super()._trim_state_snapshots()
+        if self._max_history is None:
+            return
+        excess = len(self._reserve_snapshots) - (self._max_history + 1)
+        if excess > 0:
+            del self._reserve_snapshots[1 : 1 + excess]
 
     def undo_move(self) -> None:
         if len(self._state_snapshots) < 2:

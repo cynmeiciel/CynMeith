@@ -166,6 +166,7 @@ class Game:
         resource_system: ResourceSystem | None = None,
         scoring_system: ScoringSystem | None = None,
         win_conditions: Iterable[WinCondition] | None = None,
+        max_history: int | None = None,
     ) -> None:
         self.config = config if isinstance(config, Config) else Config(config)
         self.board = Board(self.config, move_manager, move_history)
@@ -178,8 +179,27 @@ class Game:
         self._state_snapshots: list[GameStateSnapshot] = []
         self._redo_state_snapshots: list[GameStateSnapshot] = []
         self._suspend_board_sync = False
+        self._max_history = max_history
+        self.board.history.set_max_history(max_history)
         self.board.set_state_listener(self._handle_external_board_change)
         self._reseed_state()
+
+    @property
+    def max_history(self) -> int | None:
+        return self._max_history
+
+    def _trim_state_snapshots(self) -> None:
+        """
+        Keep `_state_snapshots` aligned with the bounded board history.
+
+        The first entry is always the seed state, so the cap is
+        `max_history + 1` total entries.
+        """
+        if self._max_history is None:
+            return
+        excess = len(self._state_snapshots) - (self._max_history + 1)
+        if excess > 0:
+            del self._state_snapshots[1 : 1 + excess]
 
     @property
     def current_side(self) -> Side2 | None:
@@ -272,6 +292,7 @@ class Game:
         self._outcome = self._evaluate_outcome()
         self._state_snapshots.append(self._capture_state_snapshot())
         self._redo_state_snapshots.clear()
+        self._trim_state_snapshots()
 
     def get_valid_moves(self, piece: Piece | None) -> list[Coord] | None:
         if piece is None:
