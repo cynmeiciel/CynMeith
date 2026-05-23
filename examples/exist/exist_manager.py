@@ -4,6 +4,14 @@ from cynmeith import Board, BoardSimulation, MoveManager
 from cynmeith.core.move_effects import EffectPresets
 from cynmeith.utils import Coord, Move
 
+# The four maximal lines through any cell, identified by direction vectors.
+_LINE_DIRECTIONS = (
+    Coord(0, 1),  # row
+    Coord(1, 0),  # column
+    Coord(1, 1),  # main diagonal
+    Coord(1, -1),  # anti-diagonal
+)
+
 
 class ExistManager(MoveManager):
     """
@@ -62,6 +70,12 @@ class ExistManager(MoveManager):
             return None
         if not self.board.is_in_bounds(move.end) or not self.board.is_empty(move.end):
             return None
+        # Reject any placement whose destination would form a line of exactly
+        # two pieces of the same side along any row, column, or diagonal.
+        for direction in _LINE_DIRECTIONS:
+            pieces_along = list(self.board.iter_pieces_through(move.end, direction))
+            if len(pieces_along) == 2 and pieces_along[0].side == pieces_along[1].side:
+                return None
 
         simulation = BoardSimulation(self.board)
         placed_piece = simulation.factory.create_piece(
@@ -114,6 +128,7 @@ class ExistManager(MoveManager):
             return None
         if piece.position.chebyshev_to(move.end) != 1:
             return None
+
         line_captures = self._find_line_captures(
             self.board,
             move.start,
@@ -133,6 +148,11 @@ class ExistManager(MoveManager):
         )
         if captured_positions:
             self._remove_positions(simulation, captured_positions)
+
+        # Reject moves that leave move.end on a line containing exactly
+        # two same-side pieces, ignoring the moved piece itself.
+        if self._destination_in_same_side_line(simulation, move.end):
+            return None
 
         if not self._board_obeys_restrictions(simulation):
             return None
@@ -214,6 +234,30 @@ class ExistManager(MoveManager):
             if self._count_tile_occupancy(board, position) > 3:
                 captured.append(position)
         return captured
+
+    def _destination_in_same_side_line(
+        self,
+        board: Board | BoardSimulation,
+        target: Coord,
+    ) -> bool:
+        """
+        True if any maximal line through `target` contains exactly two
+        same-side pieces, excluding whatever currently sits at `target`.
+
+        Intended for use on a post-action board: the actor has already
+        been placed at `target` and any captures have been resolved, so
+        filtering `position == target` makes the rule "are there two
+        same-side pieces *other than me* on a line through here?"
+        """
+        for direction in _LINE_DIRECTIONS:
+            others = [
+                piece
+                for position, piece in board.iter_enumerate_through(target, direction)
+                if piece is not None and position != target
+            ]
+            if len(others) == 2 and others[0].side == others[1].side:
+                return True
+        return False
 
     def _board_obeys_restrictions(self, board: BoardSimulation) -> bool:
         """Check that both global restrictions hold on the given board state."""

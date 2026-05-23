@@ -131,11 +131,23 @@ class Coord:
             abs(self.r - other.r) == 1 and abs(self.c - other.c) == 2
         )
 
-    def is_diagonal(self, other: Coord) -> bool:
+    def is_diagonal(self, other: Coord, orientation: str = "both") -> bool:
         """
         Check if the position is reachable in a diagonal line.
+        Args:
+        orientation (str): The orientation of the diagonal. Can be "both", "positive", or "negative".
+        - "both": Checks for both positive and negative diagonals.
+        - "positive": Checks for diagonals where r - c is constant.
+        - "negative": Checks for diagonals where r + c is constant.
         """
-        return abs(self.r - other.r) == abs(self.c - other.c)
+        if orientation == "both":
+            return abs(self.r - other.r) == abs(self.c - other.c)
+        elif orientation == "positive":
+            return self.r - other.r == self.c - other.c
+        elif orientation == "negative":
+            return self.r - other.r == -(self.c - other.c)
+        else:
+            raise ValueError("Invalid orientation. Use 'both', 'positive', or 'negative'.")
 
     def is_horizontal(self, other: Coord) -> bool:
         """

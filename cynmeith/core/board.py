@@ -241,6 +241,57 @@ class Board:
             raise ValueError(f"Invalid line criteria between {start} and {end}")
 
         return len(list(self.iter_pieces_line(start, end, criteria)))
+    
+    def iter_enumerate_through(
+        self,
+        position: Coord,
+        direction: Coord,
+        none_piece: bool = False,
+    ) -> Iterable[tuple[Coord, Piece | None]]:
+        """
+        Iterate (position, piece) pairs on the maximal straight line
+        passing through `position` in the given `direction`.
+
+        `direction` is a unit step (dr, dc) with each component in
+        {-1, 0, 1}; it specifies an axis, not an arrow. The method walks
+        back to the board edge against `direction`, then forward through
+        `position` to the far edge. `direction` and `-direction` produce
+        the same line (yielded in opposite order).
+
+        For the four maximal lines, choose:
+            - `Coord(0, 1)` row
+            - `Coord(1, 0)` column
+            - `Coord(1, 1)` main diagonal (top-left to bottom-right)
+            - `Coord(1, -1)` anti-diagonal (top-right to bottom-left)
+        """
+        if direction.r == 0 and direction.c == 0:
+            raise ValueError("direction must be non-zero")
+
+        # Walk backwards to the line's start at the board edge.
+        start = position
+        while self.is_in_bounds(start - direction):
+            start = start - direction
+
+        cursor = start
+        while self.is_in_bounds(cursor):
+            piece = self.at(cursor)
+            if piece is not None or none_piece:
+                yield cursor, piece
+            cursor = cursor + direction
+
+    def iter_pieces_through(
+        self,
+        position: Coord,
+        direction: Coord,
+        none_piece: bool = False,
+    ) -> Iterable[Piece | None]:
+        """
+        Iterate pieces on the maximal straight line passing through
+        `position` in the given `direction`. See `iter_enumerate_through`
+        for the direction-vector convention.
+        """
+        for _, piece in self.iter_enumerate_through(position, direction, none_piece):
+            yield piece
 
     def count_pieces_from(self, position: Coord) -> dict[str, int]:
         """
@@ -635,6 +686,35 @@ class BoardSimulation:
             piece = self._get_raw(position)
             if piece is not None or none_piece:
                 yield position, piece
+
+    def iter_enumerate_through(
+        self,
+        position: Coord,
+        direction: Coord,
+        none_piece: bool = False,
+    ) -> Iterable[tuple[Coord, Piece | None]]:
+        if direction.r == 0 and direction.c == 0:
+            raise ValueError("direction must be non-zero")
+
+        start = position
+        while self.is_in_bounds(start - direction):
+            start = start - direction
+
+        cursor = start
+        while self.is_in_bounds(cursor):
+            piece = self._get_raw(cursor)
+            if piece is not None or none_piece:
+                yield cursor, piece
+            cursor = cursor + direction
+
+    def iter_pieces_through(
+        self,
+        position: Coord,
+        direction: Coord,
+        none_piece: bool = False,
+    ) -> Iterable[Piece | None]:
+        for _, piece in self.iter_enumerate_through(position, direction, none_piece):
+            yield piece
 
     def is_empty_line(
         self,
