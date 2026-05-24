@@ -8,12 +8,10 @@ from cynmeith.core.game import GameStateSnapshot
 from cynmeith.core.move_effects import RemovePieceEffect
 from cynmeith.utils import Coord
 from cynmeith.utils.aliases import InvalidMoveError, Move, MoveHistoryError
-from examples.ui.spec import BoardTheme, GameSpec
 
 from .exist_manager import ExistManager
 from .exist_turn_policy import ExistTurnPolicy
 from .reserve_manager import ReserveManager
-from .ui import ExistTkGameApp
 
 
 class ExistGame(Game):
@@ -252,14 +250,14 @@ def _build_win_conditions() -> list[WinCondition]:
     return [ExistAllPiecesCondition(), ExistStalemateCondition()]
 
 
-def _create_exist_game() -> ExistGame:
-    return ExistGame()
+def build_game_spec():  # type: ignore[return]
+    # Imported lazily so that importing ExistGame does not pull in Tk.
+    from examples.ui.spec import BoardTheme, GameSpec
+    from .ui import ExistTkGameApp
 
-
-def build_game_spec() -> GameSpec:
     return GameSpec(
         title="Exist",
-        create_game=_create_exist_game,
+        create_game=ExistGame,
         theme=BoardTheme(
             light_color="#efe4c8",
             dark_color="#7f6a4f",
