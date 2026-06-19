@@ -54,7 +54,7 @@ game.move(...)
 ## Documentation
 
 - Start here: [docs/index.md](docs/index.md)
-- Project guide: [docs/project.md](docs/project.md)
+- Overview: [docs/overview.md](docs/overview.md)
 - Python-enough guide: [docs/python-enough.md](docs/python-enough.md)
 - First custom game: [docs/first-game.md](docs/first-game.md)
 - API reference: [docs/api.md](docs/api.md)

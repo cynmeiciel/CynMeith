@@ -6,43 +6,21 @@ For learning flow and architecture rationale, start from [docs/index.md](index.m
 
 ## Package Exports
 
-`cynmeith` exports:
+`cynmeith` exports the following public surface, grouped by role:
 
-- `Board`
-- `Config`
-- `Game`
-- `GameOutcome`
-- `BoardSimulation`
-- `EliminatePieceCondition`
-- `ReachSquareCondition`
-- `NoLegalMovesCondition`
-- `MoveLimitDrawCondition`
-- `RoyalCheckmateCondition`
-- `RoyalStalemateCondition`
-- `MoveManager`
-- `RoyalRuleset`
-- `RoyalSafetyMoveManager`
-- `MoveHistory`
-- `PhaseSystem`
-- `StaticPhaseSystem`
-- `TurnCountPhaseSystem`
-- `TwoStagePhaseSystem`
-- `Piece`
-- `PieceFactory`
-- `ResourceSystem`
-- `ActionPointSystem`
-- `ScoringSystem`
-- `PieceCountScoringSystem`
-- `MaterialScoreSystem`
-- `TurnPolicy`
-- `FreeTurnPolicy`
-- `QuotaTurnPolicy`
-- `WinCondition`
-- `MoveEffect`
-- `RemovePieceEffect`
-- `MovePieceEffect`
-- `PromotePieceEffect`
-- `EffectPresets`
+| Category | Names |
+| --- | --- |
+| Core | `Board`, `BoardSimulation`, `Config`, `ConfigError`, `Game`, `GameOutcome` |
+| State | `Piece`, `PieceFactory`, `MoveHistory` |
+| Rules | `MoveManager`, `RoyalSafetyMoveManager`, `RoyalRuleset` |
+| Effects | `MoveEffect`, `RemovePieceEffect`, `MovePieceEffect`, `PromotePieceEffect`, `PlacePieceEffect`, `EffectPresets` |
+| Turn policies | `TurnPolicy`, `FreeTurnPolicy`, `QuotaTurnPolicy` |
+| Win conditions | `WinCondition`, `EliminatePieceCondition`, `ReachSquareCondition`, `NoLegalMovesCondition`, `MoveLimitDrawCondition`, `RoyalCheckmateCondition`, `RoyalStalemateCondition` |
+| Phase systems | `PhaseSystem`, `StaticPhaseSystem`, `TurnCountPhaseSystem`, `TwoStagePhaseSystem` |
+| Resource systems | `ResourceSystem`, `ActionPointSystem` |
+| Scoring systems | `ScoringSystem`, `PieceCountScoringSystem`, `MaterialScoreSystem` |
+
+`cynmeith.utils` is also exported as a submodule (`Coord`, `Move`, FEN helpers, type aliases).
 
 ## Config
 
@@ -70,6 +48,21 @@ Piece helpers:
 
 - `get_piece_path(piece_name)`
 - `get_piece_symbol(piece_name)`
+
+## PieceFactory
+
+`PieceFactory()` builds `Piece` instances from registered symbols. `Board`
+creates and owns one internally, so most users never construct it directly.
+
+Important methods:
+
+- `register_pieces(config)`: load piece classes/symbols from a `Config`.
+- `register_piece(...)` / `unregister_piece(symbol)`: manage individual entries.
+- `create_piece(symbol, position)`: build a piece by symbol. Side is inferred
+  from case (uppercase = first side, lowercase = second side).
+
+You only need it directly when writing tooling that constructs pieces outside a
+`Board`.
 
 ## Board
 
@@ -100,7 +93,9 @@ Notes:
 
 ## Game
 
-`Game(config, move_manager=MoveManager, move_history=MoveHistory, turn_policy=None, phase_system=None, resource_system=None, scoring_system=None, win_conditions=None)` orchestrates gameplay with turn control and optional game-level systems.
+`Game(config, move_manager=MoveManager, move_history=MoveHistory, turn_policy=None, phase_system=None, resource_system=None, scoring_system=None, win_conditions=None, max_history=None)` orchestrates gameplay with turn control and optional game-level systems.
+
+`config` may be a `Config`, a path (`str`), or a mapping; it is wrapped in a `Config` automatically. `max_history` caps how many moves are retained for undo (`None` means unbounded).
 
 Important methods:
 
@@ -118,6 +113,7 @@ Properties:
 - `current_phase`
 - `outcome`
 - `is_over`
+- `max_history`
 
 Notes:
 
@@ -223,6 +219,7 @@ Built-ins:
 - `RemovePieceEffect(position)`
 - `MovePieceEffect(start, end)`
 - `PromotePieceEffect(symbol, position=None)`
+- `PlacePieceEffect(symbol, side=None, position=None)`
 
 Builders:
 
@@ -230,6 +227,7 @@ Builders:
 - `EffectPresets.captures(*positions)`
 - `EffectPresets.relocate(start, end)`
 - `EffectPresets.promote(symbol, position=None)`
+- `EffectPresets.drop(symbol, side=None, position=None)`
 
 Effects are normally attached via `Move.extra_info["effects"]` in `resolve_move`.
 
@@ -254,7 +252,9 @@ Recommended pattern for sliding pieces:
 
 ## Move History
 
-`MoveHistory(board)` stores snapshots for undo/redo.
+`MoveHistory(board, max_history=None)` records moves for undo/redo. State is
+stored as per-move deltas against a baseline grid rather than full snapshots, so
+full board states are materialized lazily only when requested.
 
 Important methods:
 
@@ -263,18 +263,35 @@ Important methods:
 - `undo_move()`
 - `redo_move()`
 - `clear()`
+- `set_max_history(max_history)`
 
 Counters/stacks:
 
 - `num_moves`
-- `move_stack`, `state_stack`
-- `redo_stack`, `redo_state_stack`
+- `move_stack`, `redo_stack` (the `Move` objects)
+- `state_stack` (a lazy view that materializes board states on access)
+- `max_history` (cap on retained moves; `None` means unbounded)
+
+Note: `Game` sets `max_history` on its `MoveHistory` from the `Game(max_history=...)`
+argument.
 
 ## Common Data Types
 
+- `Coord(row, col)`: a board position (row first, then column). Construct moves
+  by passing two `Coord`s as `start` and `end`.
 - `Move(start, end, move_type="", extra_info=None)`
 - `MoveType`: move category string.
 - `MoveExtraInfo`: metadata dictionary (`dict[str, object]`).
+
+### Sides
+
+A side is just a boolean (`Side2`): `True` is the first side, `False` is the
+second. This shows up throughout the API:
+
+- `Piece.side` is `True` or `False`.
+- `board.is_enemy(position, side)` / `board.is_allied(position, side)` take a side.
+- `QuotaTurnPolicy(starting_side=True)` and `game.current_side` use the same convention.
+- In FEN, uppercase symbols are the first side (`True`), lowercase the second (`False`).
 
 ## Quick Example
 
@@ -282,6 +299,7 @@ Counters/stacks:
 from pathlib import Path
 
 from cynmeith import Config, Game, QuotaTurnPolicy
+from cynmeith.utils import Coord
 from examples.chess.chess_manager import ChessManager
 
 game = Game(
@@ -290,6 +308,8 @@ game = Game(
     turn_policy=QuotaTurnPolicy(moves_per_turn=1),
 )
 
+# Coord is (row, column). This moves the piece on row 6 to row 4 in column 4.
+start, end = Coord(6, 4), Coord(4, 4)
 if game.can_move(start, end):
     game.move(start, end)
 ```

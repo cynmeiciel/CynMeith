@@ -57,12 +57,20 @@ game = Game(cfg)
 
 ## Make Moves
 
+Positions are `Coord(row, col)` values. Pass a start and an end:
+
 ```python
+from cynmeith.utils import Coord
+
+start, end = Coord(6, 4), Coord(4, 4)  # row 6 -> row 4, column 4
 if game.can_move(start, end):
     game.move(start, end)
 ```
 
 Out-of-bounds coordinates simply return `False` from `game.can_move(...)`.
+
+A "side" is a boolean: `True` is the first side, `False` is the second.
+`game.current_side` tells you who is to move.
 
 Promotion (programmatic usage):
 

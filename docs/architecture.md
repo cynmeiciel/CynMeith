@@ -24,7 +24,9 @@ In 1.0 examples, candidate generation is piece-driven:
 - Jump pieces generate bounded offset candidates.
 - Sliding pieces iterate rays via `Board.iter_positions_towards(...)` and stop at first blocker.
 
-`MoveHistory` stores snapshots so undo/redo restores exact board state.
+`MoveHistory` records each move as a delta against a baseline grid, so undo/redo
+can restore exact board state while materializing full snapshots only on demand.
+An optional `max_history` cap bounds how many moves are retained.
 
 ## Layer 2: Rules (`MoveManager`, `MoveEffect`)
 

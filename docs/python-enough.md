@@ -241,6 +241,20 @@ So:
 
 You do not create `self`. Python passes it automatically inside methods.
 
+## Sides Are Just `True` or `False`
+
+A "side" in CynMeith is simply a boolean.
+
+- `True` is the first side.
+- `False` is the second side.
+
+So `self.side` is `True` or `False`, and board questions like
+`board.is_enemy(position, self.side)` just compare those booleans. In a FEN
+setup string, uppercase symbols belong to the first side (`True`) and lowercase
+symbols belong to the second side (`False`).
+
+You do not need anything fancier than that to start writing rules.
+
 ## Type Hints: Helpful, Not Magical
 
 You will often see code like this:

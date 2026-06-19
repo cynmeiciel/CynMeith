@@ -2,24 +2,30 @@
 
 This documentation is organized around how people actually approach the project:
 
-- "What is this project?"
-- "Can I run it?"
+- "What is this project and can I run it?"
 - "Do I know enough Python to extend it?"
 - "How do I build my own game?"
 - "What exactly does the API expose?"
 
 ## Read in This Order
 
-1. [Project Guide](project.md)
-2. [Overview](overview.md)
-3. [Quickstart](quickstart.md)
-4. [Python Enough for CynMeith](python-enough.md)
-5. [Your First Custom Game](first-game.md)
-6. [Architecture](architecture.md)
-7. [Extending the Engine](extending.md)
-8. [Examples Guide](examples.md)
-9. [Roadmap](roadmap.md)
-10. [API Reference](api.md)
+**Start here**
+
+1. [Overview](overview.md) — what this is, who it is for, and its scope
+2. [Quickstart](quickstart.md) — install and run an example
+
+**Learn to build**
+
+3. [Python Enough for CynMeith](python-enough.md) — the small Python subset you need
+4. [Your First Custom Game](first-game.md) — blank slate to playable prototype
+5. [Extending the Engine](extending.md) — every extension point in one place
+
+**Reference**
+
+6. [Architecture](architecture.md) — how the layers fit together
+7. [Examples Guide](examples.md) — the chess and xiangqi stacks
+8. [API Reference](api.md) — exact classes, methods, and signatures
+9. [Roadmap](roadmap.md) — where the project is going
 
 ## 1.0 Focus
 
@@ -33,8 +39,7 @@ This documentation set is synchronized for 1.0.0 with these practical goals:
 
 ## Which Page Should I Start With?
 
-- Want the project's intent and limits first: start at [Project Guide](project.md).
-- New to the project: start at [Overview](overview.md).
+- New to the project, or want its intent and limits: start at [Overview](overview.md).
 - Want to run something immediately: go to [Quickstart](quickstart.md).
 - Unsure whether you know enough Python: read [Python Enough for CynMeith](python-enough.md).
 - Want to build something original quickly: use [Your First Custom Game](first-game.md).
