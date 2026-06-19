@@ -7,7 +7,7 @@ from cynmeith import Config, Game, GameOutcome, WinCondition
 from cynmeith.core.game import GameStateSnapshot
 from cynmeith.core.move_effects import RemovePieceEffect
 from cynmeith.utils import Coord
-from cynmeith.utils.aliases import InvalidMoveError, Move, MoveHistoryError
+from cynmeith.utils.aliases import InvalidMoveError, Move, MoveHistoryError, MoveKeys
 
 from .exist_manager import ExistManager
 from .exist_turn_policy import ExistTurnPolicy
@@ -168,7 +168,7 @@ class ExistGame(Game):
 
         capture_count = 0
         if isinstance(move.extra_info, dict):
-            effects = move.extra_info.get("effects")
+            effects = move.extra_info.get(MoveKeys.EFFECTS)
             if isinstance(effects, list):
                 capture_count = sum(
                     1 for effect in effects if isinstance(effect, RemovePieceEffect)
@@ -253,6 +253,7 @@ def _build_win_conditions() -> list[WinCondition]:
 def build_game_spec():  # type: ignore[return]
     # Imported lazily so that importing ExistGame does not pull in Tk.
     from examples.ui.spec import BoardTheme, GameSpec
+
     from .ui import ExistTkGameApp
 
     return GameSpec(

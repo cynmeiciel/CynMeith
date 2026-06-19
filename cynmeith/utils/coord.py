@@ -147,7 +147,9 @@ class Coord:
         elif orientation == "negative":
             return self.r - other.r == -(self.c - other.c)
         else:
-            raise ValueError("Invalid orientation. Use 'both', 'positive', or 'negative'.")
+            raise ValueError(
+                "Invalid orientation. Use 'both', 'positive', or 'negative'."
+            )
 
     def is_horizontal(self, other: Coord) -> bool:
         """

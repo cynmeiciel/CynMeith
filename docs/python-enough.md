@@ -468,7 +468,7 @@ For example:
 
 ```python
 extra = dict(move.extra_info or {})
-extra["promotion"] = "Q"
+extra["promotion"] = "Q"  # a game-specific key your own code reads
 return Move(move.start, move.end, move.move_type, extra)
 ```
 
@@ -476,9 +476,14 @@ Or:
 
 ```python
 extra = dict(move.extra_info or {})
-extra["effects"] = EffectPresets.capture(target)
+extra[MoveKeys.EFFECTS] = EffectPresets.capture(target)
 return Move(move.start, move.end, move.move_type, extra)
 ```
+
+`extra_info` is an open dictionary. You can add your own keys (like `"promotion"`
+above), but for the keys the engine itself understands, use the `MoveKeys`
+constants (`MoveKeys.EFFECTS`, `MoveKeys.MOVE_ACTOR`, `MoveKeys.ACTOR_PIECE`)
+instead of raw strings, so a typo becomes an error instead of a silent no-op.
 
 ## Effects
 
@@ -490,12 +495,12 @@ Example:
 
 ```python
 from cynmeith import EffectPresets
-from cynmeith.utils import Move
+from cynmeith.utils import Move, MoveKeys
 
 
 def with_capture(move: Move, target: Coord) -> Move:
     extra = dict(move.extra_info or {})
-    extra["effects"] = EffectPresets.capture(target)
+    extra[MoveKeys.EFFECTS] = EffectPresets.capture(target)
     return Move(move.start, move.end, move.move_type, extra)
 ```
 

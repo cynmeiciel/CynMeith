@@ -241,7 +241,7 @@ class Board:
             raise ValueError(f"Invalid line criteria between {start} and {end}")
 
         return len(list(self.iter_pieces_line(start, end, criteria)))
-    
+
     def iter_enumerate_through(
         self,
         position: Coord,

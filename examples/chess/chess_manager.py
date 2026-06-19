@@ -1,7 +1,7 @@
 from cynmeith import MoveManager, RoyalSafetyMoveManager
 from cynmeith.core.move_effects import EffectPresets, PromotePieceEffect
 from cynmeith.core.piece import Piece
-from cynmeith.utils import Coord, InvalidMoveError, Move
+from cynmeith.utils import Coord, InvalidMoveError, Move, MoveKeys
 
 from .king import King
 from .pawn import Pawn
@@ -62,11 +62,11 @@ class ChessManager(RoyalSafetyMoveManager):
 
             merged = dict(extra)
             merged_effects = []
-            effects = merged.get("effects")
+            effects = merged.get(MoveKeys.EFFECTS)
             if isinstance(effects, list):
                 merged_effects.extend(effects)
             merged_effects.append(PromotePieceEffect(promotion_symbol))
-            merged["effects"] = merged_effects
+            merged[MoveKeys.EFFECTS] = merged_effects
             move = Move(move.start, move.end, move.move_type, merged)
 
         super().apply_move(move, piece)
@@ -142,9 +142,9 @@ class ChessManager(RoyalSafetyMoveManager):
 
     def _with_effects(self, move: Move, effects: list, extra: dict = None) -> Move:
         merged = dict(extra) if extra else {}
-        existing = merged.get("effects")
+        existing = merged.get(MoveKeys.EFFECTS)
         if isinstance(existing, list):
-            merged["effects"] = [*existing, *effects]
+            merged[MoveKeys.EFFECTS] = [*existing, *effects]
         else:
-            merged["effects"] = list(effects)
+            merged[MoveKeys.EFFECTS] = list(effects)
         return Move(move.start, move.end, move.move_type, merged)

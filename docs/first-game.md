@@ -72,7 +72,7 @@ without moving.
 
 ```python
 from cynmeith import EffectPresets, MoveManager
-from cynmeith.utils import Coord, Move
+from cynmeith.utils import Coord, Move, MoveKeys
 
 from .scout import Scout
 
@@ -90,8 +90,8 @@ class DuelManager(MoveManager):
                 return None
 
             extra = dict(move.extra_info or {})
-            extra["effects"] = EffectPresets.capture(target)
-            extra["move_actor"] = False
+            extra[MoveKeys.EFFECTS] = EffectPresets.capture(target)
+            extra[MoveKeys.MOVE_ACTOR] = False
             return Move(move.start, move.end, move.move_type, extra)
 
         if self.board.is_allied(move.end, piece.side):

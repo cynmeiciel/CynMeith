@@ -224,44 +224,20 @@ class Game:
             return None
         return dict(self.scoring_system.get_scores(self))
 
-    def can_move(
+    def _validate_move(
         self,
         start: Coord,
         end: Coord,
-        move_type: MoveType = "",
-        extra_info: MoveExtraInfo | None = None,
-    ) -> bool:
-        if self.is_over:
-            return False
-        try:
-            move = Move(start, end, move_type, extra_info)
-            resolved_move = self.board.manager.resolve_move(move)
-            if resolved_move is None:
-                return False
-            piece = self.board.manager.get_actor_piece(resolved_move)
-            if piece is None:
-                return False
-            if not self.turn_policy.can_move(self, piece, resolved_move):
-                return False
-            if self.phase_system is not None and not self.phase_system.can_move(
-                self, piece, resolved_move
-            ):
-                return False
-            if self.resource_system is not None and not self.resource_system.can_move(
-                self, piece, resolved_move
-            ):
-                return False
-        except PositionError:
-            return False
-        return True
+        move_type: MoveType,
+        extra_info: MoveExtraInfo | None,
+    ) -> tuple[Move, Piece]:
+        """
+        Run the full move-validation chain shared by `can_move` and `move`.
 
-    def move(
-        self,
-        start: Coord,
-        end: Coord,
-        move_type: MoveType = "",
-        extra_info: MoveExtraInfo | None = None,
-    ) -> None:
+        Returns the resolved move and its actor piece on success, and raises a
+        specific error otherwise so `move` can surface a precise reason while
+        `can_move` simply treats any failure as `False`.
+        """
         if self.is_over:
             raise InvalidMoveError("Game is already over.")
 
@@ -282,6 +258,29 @@ class Game:
             self, piece, resolved_move
         ):
             raise InvalidMoveError("Move is not allowed by the active resource system.")
+        return resolved_move, piece
+
+    def can_move(
+        self,
+        start: Coord,
+        end: Coord,
+        move_type: MoveType = "",
+        extra_info: MoveExtraInfo | None = None,
+    ) -> bool:
+        try:
+            self._validate_move(start, end, move_type, extra_info)
+        except (InvalidMoveError, PieceError, PositionError):
+            return False
+        return True
+
+    def move(
+        self,
+        start: Coord,
+        end: Coord,
+        move_type: MoveType = "",
+        extra_info: MoveExtraInfo | None = None,
+    ) -> None:
+        resolved_move, piece = self._validate_move(start, end, move_type, extra_info)
 
         self.board.manager.apply_move(resolved_move, piece)
         self.turn_policy.after_move(self, piece, resolved_move)

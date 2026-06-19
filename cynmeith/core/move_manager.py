@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, cast
 
 from cynmeith.core.move_effects import MoveEffect
 from cynmeith.core.piece import Piece
-from cynmeith.utils.aliases import Move, MoveExtraInfo
+from cynmeith.utils.aliases import Move, MoveExtraInfo, MoveKeys
 from cynmeith.utils.coord import Coord
 
 if TYPE_CHECKING:
@@ -46,7 +46,8 @@ class MoveManager:
         if not self.validate_move(move):
             return None
 
-        if self.board.is_allied(move.end, self.board.side_at(move.start)):  # type: ignore
+        side = self.board.side_at(move.start)
+        if side is not None and self.board.is_allied(move.end, side):
             return None
 
         return move
@@ -60,7 +61,7 @@ class MoveManager:
         extra = self._build_extra_info(move)
 
         # Optimization: use get with default to avoid extra dict lookups
-        move_actor = cast(bool, extra.get("move_actor", True))
+        move_actor = cast(bool, extra.get(MoveKeys.MOVE_ACTOR, True))
         self.board.history.begin_recording()
         if move_actor:
             self.board._apply_move(move, piece)
@@ -76,10 +77,10 @@ class MoveManager:
         Resolve the piece used by turn/resource/phase systems for this move.
 
         For irregular moves (e.g. drops), subclasses can inject an actor piece
-        into `extra_info["actor_piece"]` during resolve_move.
+        into `extra_info[MoveKeys.ACTOR_PIECE]` during resolve_move.
         """
         extra = self._build_extra_info(move)
-        actor_piece = extra.get("actor_piece")
+        actor_piece = extra.get(MoveKeys.ACTOR_PIECE)
         if isinstance(actor_piece, Piece):
             return actor_piece
         return self.board.at(move.start)
@@ -94,7 +95,7 @@ class MoveManager:
 
     def _build_effects(self, move: Move) -> list[MoveEffect]:
         if move.extra_info:
-            effects = move.extra_info.get("effects")
+            effects = move.extra_info.get(MoveKeys.EFFECTS)
             if isinstance(effects, list):
                 return [effect for effect in effects if isinstance(effect, MoveEffect)]
         return []

@@ -229,7 +229,7 @@ Builders:
 - `EffectPresets.promote(symbol, position=None)`
 - `EffectPresets.drop(symbol, side=None, position=None)`
 
-Effects are normally attached via `Move.extra_info["effects"]` in `resolve_move`.
+Effects are normally attached via `Move.extra_info[MoveKeys.EFFECTS]` in `resolve_move`.
 
 For input-driven effects (such as chess promotion choice), required metadata should be included in `Move.extra_info` by the caller or UI flow.
 
@@ -281,7 +281,11 @@ argument.
   by passing two `Coord`s as `start` and `end`.
 - `Move(start, end, move_type="", extra_info=None)`
 - `MoveType`: move category string.
-- `MoveExtraInfo`: metadata dictionary (`dict[str, object]`).
+- `MoveExtraInfo`: metadata dictionary (`dict[str, object]`). Stays open so games
+  can attach their own keys.
+- `MoveKeys`: named constants for the `extra_info` keys the engine itself reads
+  (`MoveKeys.EFFECTS`, `MoveKeys.MOVE_ACTOR`, `MoveKeys.ACTOR_PIECE`). Prefer these
+  over raw strings. Both are in `cynmeith.utils`.
 
 ### Sides
 

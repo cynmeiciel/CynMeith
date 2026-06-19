@@ -26,6 +26,19 @@ MoveType: TypeAlias = str  # "MOVE", "DROP", "PROMOTE", etc.
 MoveExtraInfo: TypeAlias = dict[str, object]
 
 
+class MoveKeys:
+    """
+    Recognized keys inside ``Move.extra_info`` that the engine itself reads.
+
+    ``extra_info`` stays an open ``dict`` so games can attach their own metadata,
+    but engine-handled keys are centralized here to avoid stray magic strings.
+    """
+
+    EFFECTS = "effects"  # list[MoveEffect] applied after the actor move
+    MOVE_ACTOR = "move_actor"  # bool: whether the actor piece itself moves
+    ACTOR_PIECE = "actor_piece"  # Piece used by turn/phase/resource systems
+
+
 @dataclass(frozen=True)
 class Move:
     """

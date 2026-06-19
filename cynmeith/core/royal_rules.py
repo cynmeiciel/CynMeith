@@ -7,7 +7,7 @@ from cynmeith.core.board import BoardLike, BoardSimulation
 from cynmeith.core.game_systems import GameOutcome, WinCondition
 from cynmeith.core.move_manager import MoveManager
 from cynmeith.core.piece import Piece
-from cynmeith.utils.aliases import Move, Side2
+from cynmeith.utils.aliases import Move, MoveKeys, Side2
 from cynmeith.utils.coord import Coord
 
 if TYPE_CHECKING:
@@ -86,7 +86,7 @@ class RoyalSafetyMoveManager(MoveManager, ABC):
             raise ValueError(f"No simulated piece at {move.start}")
 
         extra = self._build_extra_info(move)
-        move_actor = bool(extra.get("move_actor", True))
+        move_actor = bool(extra.get(MoveKeys.MOVE_ACTOR, True))
 
         if move_actor:
             simulated_board._apply_move(move, simulated_piece)

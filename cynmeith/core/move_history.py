@@ -140,9 +140,7 @@ class MoveHistory:
         """
         self._recording = {}
 
-    def record_cell_change(
-        self, position: Coord, before_piece: Piece | None
-    ) -> None:
+    def record_cell_change(self, position: Coord, before_piece: Piece | None) -> None:
         """
         Note the pre-mutation value of a cell during an active recording.
 
@@ -175,9 +173,7 @@ class MoveHistory:
         delta = self._deltas.pop()
         move = self.move_stack.pop()
         for position, piece in delta.before.items():
-            self.board.board[position.r][position.c] = (
-                copy(piece) if piece else None
-            )
+            self.board.board[position.r][position.c] = copy(piece) if piece else None
         self._redo_deltas.append(delta)
         self.redo_stack.append(move)
 
@@ -187,9 +183,7 @@ class MoveHistory:
         delta = self._redo_deltas.pop()
         move = self.redo_stack.pop()
         for position, piece in delta.after.items():
-            self.board.board[position.r][position.c] = (
-                copy(piece) if piece else None
-            )
+            self.board.board[position.r][position.c] = copy(piece) if piece else None
         self._deltas.append(delta)
         self.move_stack.append(move)
 

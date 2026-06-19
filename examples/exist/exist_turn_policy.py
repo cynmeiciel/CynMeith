@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal
 
-from cynmeith.utils.aliases import Move, Side2
+from cynmeith.utils.aliases import Move, MoveKeys, Side2
 
 if TYPE_CHECKING:
     from cynmeith import Game
@@ -157,7 +157,7 @@ class ExistTurnPolicy:
     def _move_has_captures(move: Move) -> bool:
         if not isinstance(move.extra_info, dict):
             return False
-        effects = move.extra_info.get("effects")
+        effects = move.extra_info.get(MoveKeys.EFFECTS)
         if not isinstance(effects, list):
             return False
         return any(

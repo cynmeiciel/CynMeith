@@ -59,16 +59,16 @@ Use this point to implement game-wide constraints and irregular rules.
 
 ## 3. Model Irregular Behavior with Effects
 
-Attach effects in `move.extra_info["effects"]`.
+Attach effects in `move.extra_info[MoveKeys.EFFECTS]`.
 
 ```python
 from cynmeith import EffectPresets
-from cynmeith.utils import Move
+from cynmeith.utils import Move, MoveKeys
 
 
 def with_capture(move: Move, capture_position):
     extra = dict(move.extra_info or {})
-    extra["effects"] = EffectPresets.capture(capture_position)
+    extra[MoveKeys.EFFECTS] = EffectPresets.capture(capture_position)
     return Move(move.start, move.end, move.move_type, extra)
 ```
 

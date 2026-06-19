@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from cynmeith import Board, BoardSimulation, MoveManager
 from cynmeith.core.move_effects import EffectPresets
-from cynmeith.utils import Coord, Move
+from cynmeith.utils import Coord, Move, MoveKeys
 
 # The four maximal lines through any cell, identified by direction vectors.
 _LINE_DIRECTIONS = (
@@ -51,8 +51,8 @@ class ExistManager(MoveManager):
             return None
 
         extra = self._build_extra_info(move)
-        extra["move_actor"] = False
-        extra["actor_piece"] = self._create_actor_piece(side)
+        extra[MoveKeys.MOVE_ACTOR] = False
+        extra[MoveKeys.ACTOR_PIECE] = self._create_actor_piece(side)
         return Move(move.start, move.end, "END_TURN", extra)
 
     def _resolve_place(self, move: Move) -> Move | None:
@@ -95,14 +95,14 @@ class ExistManager(MoveManager):
             return None
 
         extra = self._build_extra_info(move)
-        extra["move_actor"] = False
-        extra["actor_piece"] = self._create_actor_piece(side)
+        extra[MoveKeys.MOVE_ACTOR] = False
+        extra[MoveKeys.ACTOR_PIECE] = self._create_actor_piece(side)
 
         effects = [
             *EffectPresets.drop("X", side=side, position=move.end),
             *EffectPresets.captures(*captured_positions),
         ]
-        extra["effects"] = effects
+        extra[MoveKeys.EFFECTS] = effects
         return Move(move.start, move.end, "PLACE", extra)
 
     def _resolve_move_existing(self, move: Move) -> Move | None:
@@ -158,7 +158,7 @@ class ExistManager(MoveManager):
             return None
 
         extra = self._build_extra_info(move)
-        extra["effects"] = EffectPresets.captures(*captured_positions)
+        extra[MoveKeys.EFFECTS] = EffectPresets.captures(*captured_positions)
         return Move(move.start, move.end, "MOVE", extra)
 
     def _find_line_captures(

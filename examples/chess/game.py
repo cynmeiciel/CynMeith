@@ -11,6 +11,7 @@ from cynmeith import (
     RoyalStalemateCondition,
     WinCondition,
 )
+from cynmeith.utils import MoveKeys
 from examples.ui.spec import BoardTheme, GameSpec
 
 from .chess_manager import ChessManager
@@ -50,7 +51,7 @@ class ChessFiftyMoveCondition(WinCondition):
 
             if move.extra_info and any(
                 e.__class__.__name__ == "RemovePieceEffect"
-                for e in move.extra_info.get("effects", [])
+                for e in move.extra_info.get(MoveKeys.EFFECTS, [])
             ):
                 return None
 
